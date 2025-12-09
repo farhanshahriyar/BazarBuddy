@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User } from "lucide-react";
+import { Loader2, User, Eye, EyeOff } from "lucide-react";
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -12,6 +12,8 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     register
   } = useAuth();
@@ -69,18 +71,36 @@ const Register = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-left block">Password</Label>
-            <Input id="password" required type="password" placeholder="******" value={password} onChange={e => {
-              setPassword(e.target.value);
-              if (confirmPassword) validatePasswords();
-            }} />
+            <div className="relative">
+              <Input id="password" required type={showPassword ? "text" : "password"} placeholder="******" value={password} onChange={e => {
+                setPassword(e.target.value);
+                if (confirmPassword) validatePasswords();
+              }} className="pr-10" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm-password" className="text-left block">Confirm Password</Label>
-            <Input id="confirm-password" required type="password" placeholder="******" value={confirmPassword} onChange={e => {
-              setConfirmPassword(e.target.value);
-              if (password) validatePasswords();
-            }} />
-            {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+            <div className="relative">
+              <Input id="confirm-password" required type={showConfirmPassword ? "text" : "password"} placeholder="******" value={confirmPassword} onChange={e => {
+                setConfirmPassword(e.target.value);
+                if (password) validatePasswords();
+              }} className="pr-10" />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            {passwordError && <p className="text-sm text-white bg-red-500 p-1 mt-1 rounded">{passwordError}</p>}
           </div>
           <Button type="submit" disabled={isSubmitting} className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50">
             {isSubmitting ? <>
@@ -98,7 +118,7 @@ const Register = () => {
       </div>
     </div>
     <div className="hidden md:block bg-zinc-900 relative overflow-hidden">
-      <img src="../../public/Loginpage.jpg" alt="Background" className="absolute inset-0 object-cover w-full h-full opacity-50" />
+      <img src="https://78d11y9vqc.ufs.sh/f/5z2fDmMWhbJS6BCcddyNTEA0PDgHOpmwL5tZIRnBlWrN84QC" alt="Background" className="absolute inset-0 object-cover w-full h-full opacity-50" />
       <div className="absolute inset-0 bg-black opacity-50" />
       <div className="relative flex items-center justify-center h-full p-8">
         <h1 className="text-4xl font-bold text-white">Welcome to Bazar Buddy</h1>

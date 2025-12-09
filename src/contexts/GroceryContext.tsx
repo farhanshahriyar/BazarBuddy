@@ -375,14 +375,14 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
   const addItemToList = async (
     listId: string,
-    item: Omit<GroceryItem, "id" | "estimatedPrice">
+    item: Omit<GroceryItem, "id" | "estimatedPrice"> & { estimatedPrice?: number | null }
   ) => {
     if (!user) return;
 
     setIsLoading(true);
     try {
-      // Generate price if not provided
-      const estimatedPrice = Math.floor(Math.random() * 10) + 1; // Mock price logic
+      // Use provided price or default to 0
+      const estimatedPrice = item.estimatedPrice || 0;
 
       // Add item to database
       const { data, error } = await supabase
