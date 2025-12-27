@@ -101,8 +101,8 @@ serve(async (req: Request) => {
       throw new Error(`Failed to parse price from response: ${priceText}`);
     }
 
-    // Add 50 BDT to the generated price
-    const adjustedPrice = Math.round(price + 50);
+    // Round the price (user no longer wants the +50 BDT buffer)
+    const adjustedPrice = Math.round(price);
 
     return new Response(JSON.stringify({ success: true, price: adjustedPrice }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

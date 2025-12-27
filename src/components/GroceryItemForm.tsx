@@ -156,8 +156,8 @@ export function GroceryItemForm({
       const priceBdt = await generatePriceSuggestion(name, parsedQty, unit);
       setEstimatedPrice(priceBdt.toFixed(2));
 
-      // Format the toast message according to the specified examples with +50 BDT notation
-      const toastDescription = isEnglish ? `Estimated price for ${quantity} ${unit} of "${name}" in Bangladeshi Taka: ${priceBdt} (includes +50 BDT)` : `${toBengaliNumerals(quantity)} ${unit} "${name}" এর অনুমানিত মূল্য বাংলাদেশি টাকায়: ${toBengaliNumerals(priceBdt.toFixed(2))} (+৫০ টাকা সহ)`;
+      // Format the toast message according to the specified examples 
+      const toastDescription = isEnglish ? `Estimated price for ${quantity} ${unit} of "${name}" in Bangladeshi Taka: ${priceBdt}` : `${toBengaliNumerals(quantity)} ${unit} "${name}" এর অনুমানিত মূল্য বাংলাদেশি টাকায়: ${toBengaliNumerals(priceBdt.toFixed(2))}`;
       toast({
         title: isEnglish ? "Price Generated" : "মূল্য তৈরি হয়েছে",
         description: toastDescription
@@ -239,7 +239,14 @@ export function GroceryItemForm({
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="price">{isEnglish ? "Estimated Price (BDT)" : "অনুমানিত মূল্য (৳)"}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Label htmlFor="price" className="cursor-help">{isEnglish ? "Estimated Price (BDT)" : "অনুমানিত মূল্য (৳)"}</Label>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{getText("estimatedPriceTooltip", language)}</p>
+              </TooltipContent>
+            </Tooltip>
             <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>

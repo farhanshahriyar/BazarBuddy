@@ -274,6 +274,7 @@ type TranslationKey =
   | "monthTooltip"
   | "yearTooltip"
   | "saveListTooltip"
+  | "estimatedPriceTooltip"
   | "listNotFound"
   | "listNotFoundDesc"
   | "january" | "february" | "march" | "april" | "may" | "june"
@@ -702,6 +703,10 @@ export const translations: Translations = {
   monthTooltip: {
     en: "Select the month for this list.",
     bn: "এই তালিকার জন্য মাস নির্বাচন করুন।"
+  },
+  estimatedPriceTooltip: {
+    en: "This price is an approximation; market prices may fluctuate.",
+    bn: "এই মূল্যটি আনুমানিক, কারণ বাজারের দাম ওঠানামা করতে পারে।"
   },
   yearTooltip: {
     en: "Select the year for this list.",
