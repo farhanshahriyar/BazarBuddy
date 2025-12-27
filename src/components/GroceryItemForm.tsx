@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Pencil, Plus, Sparkles } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { isValidNumber, parseBengaliFloat, toBengaliNumerals } from "@/utils/numbers";
+
 interface GroceryItemFormProps {
   listId: string;
   item?: GroceryItem;
@@ -41,8 +43,8 @@ export function GroceryItemForm({
   const [localLoading, setLocalLoading] = useState(false);
   const [isManualEdit, setIsManualEdit] = useState(false);
   const handleQuantityChange = (value: string) => {
-    // Only allow positive numbers
-    if (!value || /^\d*\.?\d*$/.test(value)) {
+    // Only allow positive numbers (Arabic or Bengali)
+    if (isValidNumber(value)) {
       setQuantity(value);
     }
   };
@@ -58,8 +60,8 @@ export function GroceryItemForm({
     }
     setLocalLoading(true);
     try {
-      const parsedQuantity = parseFloat(quantity) || 1;
-      const parsedPrice = estimatedPrice ? parseFloat(estimatedPrice) : null;
+      const parsedQuantity = parseBengaliFloat(quantity) || 1;
+      const parsedPrice = estimatedPrice ? parseBengaliFloat(estimatedPrice) : null;
 
       if (isCreatePage) {
         // For create page, we work with local state (not database)
@@ -142,11 +144,12 @@ export function GroceryItemForm({
     }
     try {
       setIsGeneratingPrice(true);
-      const priceBdt = await generatePriceSuggestion(name, parseFloat(quantity) || 1, unit);
+      const parsedQty = parseBengaliFloat(quantity) || 1;
+      const priceBdt = await generatePriceSuggestion(name, parsedQty, unit);
       setEstimatedPrice(priceBdt.toFixed(2));
 
       // Format the toast message according to the specified examples with +50 BDT notation
-      const toastDescription = isEnglish ? `Estimated price for ${quantity} ${unit} of "${name}" in Bangladeshi Taka: ${priceBdt} (includes +50 BDT)` : `${quantity} ${unit} "${name}" এর অনুমানিত মূল্য বাংলাদেশি টাকায়: ${priceBdt} (+৫০ টাকা সহ)`;
+      const toastDescription = isEnglish ? `Estimated price for ${quantity} ${unit} of "${name}" in Bangladeshi Taka: ${priceBdt} (includes +50 BDT)` : `${toBengaliNumerals(quantity)} ${unit} "${name}" এর অনুমানিত মূল্য বাংলাদেশি টাকায়: ${toBengaliNumerals(priceBdt.toFixed(2))} (+৫০ টাকা সহ)`;
       toast({
         title: isEnglish ? "Price Generated" : "মূল্য তৈরি হয়েছে",
         description: toastDescription
@@ -201,7 +204,7 @@ export function GroceryItemForm({
         </div>
       </div>
       <Input id="price" disabled={!isManualEdit} type="text" inputMode="decimal" placeholder="0.00" value={estimatedPrice} onChange={e => {
-        if (!e.target.value || /^\d*\.?\d*$/.test(e.target.value)) {
+        if (isValidNumber(e.target.value)) {
           setEstimatedPrice(e.target.value);
         }
       }} />

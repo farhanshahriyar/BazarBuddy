@@ -27,6 +27,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { toBengaliNumerals } from "@/utils/numbers";
+
 
 interface GroceryItemTableProps {
   listId: string;
@@ -76,10 +78,10 @@ function SortableRow({ item, isEnglish, onEdit, onDelete }: SortableRowProps) {
       </TableCell>
       <TableCell className="font-medium">{item.name}</TableCell>
       <TableCell className="text-center">
-        {item.quantity} {item.unit}
+        {isEnglish ? item.quantity : toBengaliNumerals(item.quantity)} {item.unit}
       </TableCell>
       <TableCell className="text-right">
-        {item.estimatedPrice ? formatCurrency(item.estimatedPrice, 'BDT') : "N/A"}
+        {item.estimatedPrice ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : "N/A"}
       </TableCell>
       <TableCell>
         <DropdownMenu>

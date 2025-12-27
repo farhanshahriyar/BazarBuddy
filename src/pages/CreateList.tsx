@@ -4,6 +4,8 @@ import { useGrocery, GroceryItem } from "@/contexts/GroceryContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/utils/currency";
 import { getText } from "@/utils/translations";
+import { toBengaliNumerals } from "@/utils/numbers";
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { GroceryItemForm } from "@/components/GroceryItemForm";
 import { GroceryItemTable } from "@/components/GroceryItemTable";
@@ -172,7 +174,7 @@ const CreateList = () => {
       <CardHeader>
         <CardTitle className="text-left">{getText("itemsInList", language)}</CardTitle>
         <CardDescription className="text-left">
-          {isEnglish ? `${items.length} items • Estimated total: ${formatCurrency(totalPriceBdt, 'BDT')}` : `${items.length} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPriceBdt, 'BDT')}`}
+          {isEnglish ? `${items.length} items • Estimated total: ${formatCurrency(totalPriceBdt, 'BDT')}` : `${toBengaliNumerals(items.length)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPriceBdt, 'BDT', true)}`}
         </CardDescription>
       </CardHeader>
       <CardContent>
