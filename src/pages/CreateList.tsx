@@ -176,7 +176,14 @@ const CreateList = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <GroceryItemTable listId={tempListId} items={items} onDelete={removeItemFromList} onUpdate={updateItemInList} isCreatePage={true} />
+        <GroceryItemTable
+          listId={tempListId}
+          items={items}
+          onDelete={removeItemFromList}
+          onUpdate={updateItemInList}
+          onReorder={setItems}
+          isCreatePage={true}
+        />
       </CardContent>
     </Card>
   </DashboardLayout>;
