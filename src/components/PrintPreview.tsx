@@ -206,8 +206,9 @@ const PrintPreview = () => {
             }
             .print-table th, .print-table td {
               border: 1px solid #ccc;
-              padding: 10px;
+              padding: 6px 8px;
               text-align: left;
+              line-height: 1.2;
             }
             .print-table th {
               background-color: #F97316 !important;
@@ -244,20 +245,20 @@ const PrintPreview = () => {
         <Table className="w-full print-table text-sm" style={{ fontFamily: "'Noto Sans Bengali', Arial, sans-serif" }}>
           <TableHeader>
             <TableRow className="bg-orange-600 text-white text-sm">
-              <TableHead className="text-white text-left">{getText("item", language)}</TableHead>
-              <TableHead className="text-white text-left">{getText("quantity", language)}</TableHead>
-              <TableHead className="text-white text-left">{getText("unit", language)}</TableHead>
-              <TableHead className="text-white text-right price-column">{getText("estPriceBdt", language)}</TableHead>
+              <TableHead className="text-white text-left py-2 px-3">{getText("item", language)}</TableHead>
+              <TableHead className="text-white text-center py-2 px-3">{getText("quantity", language)}</TableHead>
+              <TableHead className="text-white text-center py-2 px-3">{getText("unit", language)}</TableHead>
+              <TableHead className="text-white text-right py-2 px-3 price-column">{getText("estPriceBdt", language)}</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {list.items.map((item: any) => (
               <TableRow key={item.id}>
-                <TableCell className="border text-gray-950 border-gray-200 hover:bg-gray-400">{item.name}</TableCell>
-                <TableCell className="border text-gray-950 border-gray-200 hover:bg-gray-400">{isEnglish ? item.quantity : toBengaliNumerals(item.quantity)}</TableCell>
-                <TableCell className="border text-gray-950 border-gray-200 hover:bg-gray-400">{isEnglish ? item.unit : getText(item.unit, language)}</TableCell>
-                <TableCell className="border text-gray-950 border-gray-200 hover:bg-gray-400 text-right price-column">
+                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 hover:bg-gray-400">{item.name}</TableCell>
+                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 text-center hover:bg-gray-400">{isEnglish ? item.quantity : toBengaliNumerals(item.quantity)}</TableCell>
+                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 text-center hover:bg-gray-400">{isEnglish ? item.unit : getText(item.unit, language)}</TableCell>
+                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 hover:bg-gray-400 text-right price-column">
                   {item.estimatedPrice ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : (isEnglish ? '$0.00' : '৳০.০০')}
                 </TableCell>
               </TableRow>
