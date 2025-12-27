@@ -15,7 +15,7 @@ set "CURRENT_DIR=%~dp0"
 cd /d "%CURRENT_DIR%"
 
 echo ===============================
-echo   Starting Bazar Buddy Version 0.9 Software...
+echo   Starting Bazar Buddy Version 1.2 Software...
 echo ===============================
 
 :: Step 3: Start the dev server in a new terminal
