@@ -71,6 +71,64 @@ export function Sidebar({ className }: SidebarProps) {
     },
   ];
 
+  // User Menu Dropdown Component
+  const UserMenu = ({ showDetails = true }: { showDetails?: boolean }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="flex items-center gap-3 cursor-pointer">
+          <Avatar className="h-9 w-9 border-2 border-orange-500/20">
+            <AvatarFallback className="bg-primary/10 text-sidebar-foreground font-semibold">{userInitial}</AvatarFallback>
+          </Avatar>
+          {showDetails && (
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-sidebar-foreground">{userName}</span>
+              <span className="text-xs text-sidebar-foreground/60 text-left">Free User</span>
+            </div>
+          )}
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 mt-2" align="end" sideOffset={8}>
+        <div className="flex items-center gap-3 p-2 px-3 mb-1 bg-muted/50 rounded-t-md">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-orange-100 text-orange-600 font-bold text-lg">{userInitial}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-bold text-sidebar-foreground truncate">{userName}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none">Free User</span>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate("/billing")} disabled={true} className="focus:bg-orange-50 focus:text-orange-950 cursor-pointer py-2.5">
+          <DollarSign className="mr-3 h-4 w-4 text-muted-foreground" />
+          <p className="text-sm font-medium">
+            {getText("billing", language) || "Billing"}
+          </p>
+          <DropdownMenuShortcut className="ml-auto opacity-50">⌘B</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-orange-50 focus:text-orange-950 cursor-pointer py-2.5">
+          <Settings2Icon className="mr-3 h-4 w-4 text-muted-foreground" />
+          <p className="text-sm font-medium">
+            {getText("settings", language) || "Settings"}
+          </p>
+          <DropdownMenuShortcut className="ml-auto opacity-50">⌘S</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/profile")} className="focus:bg-orange-50 focus:text-orange-950 cursor-pointer py-2.5">
+          <User className="mr-3 h-4 w-4 text-muted-foreground" />
+          <p className="text-sm font-medium">
+            {getText("profile", language) || "Profile"}
+          </p>
+          <DropdownMenuShortcut className="ml-auto opacity-50">⇧⌘P</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onLogout} className="focus:bg-red-50 focus:text-red-600 text-red-500 cursor-pointer py-2.5">
+          <LogOut className="mr-3 h-4 w-4" />
+          <span className="font-semibold">{getText("logout", language) || "Logout"}</span>
+          <DropdownMenuShortcut className="ml-auto opacity-50 text-red-400">⇧⌘Q</DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   // Shared Sidebar Content component
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex h-full flex-col border-r bg-sidebar">
@@ -105,48 +163,7 @@ export function Sidebar({ className }: SidebarProps) {
         ))}
       </nav>
       <div className="mt-auto p-2.5 border-t border-sidebar-border">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-3 cursor-pointer">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary/10 text-sidebar-foreground">{userInitial}</AvatarFallback>
-              </Avatar>
-              <div className={cn("flex-col", isMobile ? "flex" : "hidden sm:flex")}>
-                <span className="text-sm font-medium text-sidebar-foreground">{userName}</span>
-                <span className="text-xs text-sidebar-foreground/60 text-left">Free User</span>
-              </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48" align="start">
-            <DropdownMenuItem onClick={() => navigate("/billing")} disabled={true}>
-              <DollarSign className="mr-2 h-4 w-4" />
-              <p className="text-sm font-medium text-sidebar-foreground">
-                {getText("billing", language) || "Billing"}
-              </p>
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings")}>
-              <Settings2Icon className="mr-2 h-4 w-4" />
-              <p className="text-sm font-medium text-sidebar-foreground">
-                {getText("settings", language) || "Settings"}
-              </p>
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              <User className="mr-2 h-4 w-4" />
-              <p className="text-sm font-medium text-sidebar-foreground">
-                {getText("profile", language) || "Profile"}
-              </p>
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              {getText("logout", language) || "Logout"}
-              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <UserMenu showDetails={!(!isMobile && false)} /> {/* Logic to show details if not collapsed or on mobile */}
       </div>
     </div>
   );
@@ -159,33 +176,30 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Mobile Header + Sheet - fixed at top */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background">
-        <div className="flex h-16 items-center gap-4 border-b px-4">
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64">
-              {/* <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-4 top-4 z-10"
-                onClick={() => setOpen(false)}
-              >
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close sidebar</span>
-              </Button> */}
-              <SidebarContent isMobile={true} />
-            </SheetContent>
-          </Sheet>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center text-primary-foreground rounded-2xl bg-orange-600">
-              <User size={16} />
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b">
+        <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="hover:bg-orange-50">
+                  <Menu className="h-6 w-6 text-orange-600" />
+                  <span className="sr-only">Toggle navigation</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64 border-r-orange-100">
+                <SidebarContent isMobile={true} />
+              </SheetContent>
+            </Sheet>
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center text-primary-foreground rounded-2xl bg-orange-600">
+                <User size={16} />
+              </div>
+              <span className="text-lg font-bold tracking-tight text-orange-600">BazarBuddy</span>
             </div>
-            <span className="text-lg font-semibold tracking-tight">BazarBuddy</span>
+          </div>
+
+          <div className="flex items-center">
+            <UserMenu showDetails={false} />
           </div>
         </div>
       </div>

@@ -264,6 +264,16 @@ type TranslationKey =
   | "printPreview"
   | "previewBeforePrinting"
   | "totalCost"
+  | "itemNameTooltip"
+  | "quantityTooltip"
+  | "unitTooltip"
+  | "manualPriceTooltip"
+  | "generatePriceTooltip"
+  | "addItemTooltip"
+  | "listTitleTooltip"
+  | "monthTooltip"
+  | "yearTooltip"
+  | "saveListTooltip"
   | "january" | "february" | "march" | "april" | "may" | "june"
   | "july" | "august" | "september" | "october" | "november" | "december";
 
@@ -659,6 +669,46 @@ export const translations: Translations = {
   october: { en: "October", bn: "অক্টোবর" },
   november: { en: "November", bn: "নভেম্বর" },
   december: { en: "December", bn: "ডিসেম্বর" },
+  itemNameTooltip: {
+    en: "Enter the name of the grocery item you want to add.",
+    bn: "আপনি যে মুদি আইটেমটি যোগ করতে চান তার নাম লিখুন।"
+  },
+  quantityTooltip: {
+    en: "Enter the amount of this item.",
+    bn: "এই আইটেমের পরিমাণ লিখুন।"
+  },
+  unitTooltip: {
+    en: "Select the unit of measurement (kg, pcs, etc.).",
+    bn: "পরিমাপের একক নির্বাচন করুন (কেজি, পিস, ইত্যাদি)।"
+  },
+  manualPriceTooltip: {
+    en: "Manually edit the estimated price.",
+    bn: "ম্যানুয়ালি অনুমানিত মূল্য সম্পাদনা করুন।"
+  },
+  generatePriceTooltip: {
+    en: "Automatically estimate the price using AI.",
+    bn: "AI ব্যবহার করে স্বয়ংক্রিয়ভাবে মূল্য অনুমান করুন।"
+  },
+  addItemTooltip: {
+    en: "Click to add this item to your list.",
+    bn: "আপনার তালিকায় এই আইটেমটি যোগ করতে ক্লিক করুন"
+  },
+  listTitleTooltip: {
+    en: "Give your grocery list a name (e.g., Weekly Groceries).",
+    bn: "আপনার মুদি তালিকার একটি নাম দিন (যেমন, সাপ্তাহিক মুদি)।"
+  },
+  monthTooltip: {
+    en: "Select the month for this list.",
+    bn: "এই তালিকার জন্য মাস নির্বাচন করুন।"
+  },
+  yearTooltip: {
+    en: "Select the year for this list.",
+    bn: "এই তালিকার জন্য বছর নির্বাচন করুন।"
+  },
+  saveListTooltip: {
+    en: "Click to permanently save your grocery list.",
+    bn: "আপনার মুদি তালিকাটি স্থায়ীভাবে সংরক্ষণ করতে ক্লিক করুন।"
+  },
 };
 
 // export const getText = (key: TranslationKey, language: "en" | "bn"): string => {

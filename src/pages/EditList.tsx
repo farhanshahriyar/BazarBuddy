@@ -24,6 +24,14 @@ const MONTHS_BN = ["জানুয়ারি", "ফেব্রুয়া�
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR + i);
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toBengaliNumerals } from "@/utils/numbers";
+
 const EditList = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -120,139 +128,165 @@ const EditList = () => {
   const totalPrice = list ? list.totalEstimatedPrice : 0;
 
   return (
-    <DashboardLayout>
-      <div className="flex items-center gap-2 mb-6">
-        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-          <p className="text-muted-foreground">
-            {selectedMonth} {selectedYear} • {list?.items.length || 0} {getText("items", language)}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {/* <Button variant="outline" onClick={() => setShowPDFPreview(true)} className="flex items-center">
-            {getText("previewPdf", language)}
-          </Button> */}
-          <Button variant="outline" onClick={handleDownloadPdf} disabled={isLoading} className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            {getText("print", language)}
+    <TooltipProvider delayDuration={300}>
+      <DashboardLayout>
+        <div className="flex items-center gap-2 mb-6">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="h-4 w-4 mr-2" />
-                {getText("deleteList", language)}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{getText("areYouSure", language)}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {/* {getText("deleteWarning", language)} "{title}" {getText("groceryList", language)}. */}
-                 {getText("groceryList", language)} "{title}", {getText("deleteWarning", language)}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{getText("cancel", language)}</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteList} className="bg-destructive text-destructive-foreground">
-                  {getText("delete", language)}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
-
-      <PDFPreview open={showPDFPreview} onOpenChange={setShowPDFPreview} listId={id!} listName={title} />
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{getText("listInformation", language)}</CardTitle>
-            <CardDescription>{getText("listDetails", language)}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-left">
-            <div className="space-y-1.5">
-              <Label htmlFor="title">{getText("listTitle", language)}</Label>
-              <Input id="title" placeholder={isEnglish ? "April Groceries" : "এপ্রিল মুদি"} value={title} onChange={e => setTitle(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="month">{getText("month", language)}</Label>
-                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger id="month">
-                    <SelectValue placeholder={getText("selectMonth", language)} />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    {MONTHS_EN.map((month, i) => (
-                      <SelectItem key={month} value={month}>
-                        {isEnglish ? month : MONTHS_BN[i]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="year">{getText("year", language)}</Label>
-                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                  <SelectTrigger id="year">
-                    <SelectValue placeholder={getText("selectYear", language)} />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    {YEARS.map(year => (
-                      <SelectItem key={year.toString()} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={handleUpdateList} disabled={isLoading} className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {getText("saving", language)}
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  {getText("saveChanges", language)}
-                </>
-              )}
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <p className="text-muted-foreground">
+              {isEnglish ? selectedMonth : MONTHS_BN[MONTHS_EN.indexOf(selectedMonth)]} {isEnglish ? selectedYear : toBengaliNumerals(selectedYear)} • {isEnglish ? list?.items.length || 0 : toBengaliNumerals(list?.items.length || 0)} {getText("items", language)}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleDownloadPdf} disabled={isLoading} className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              {getText("print", language)}
             </Button>
-          </CardFooter>
-        </Card>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash className="h-4 w-4 mr-2" />
+                  {getText("deleteList", language)}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{getText("areYouSure", language)}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {getText("groceryList", language)} "{title}", {getText("deleteWarning", language)}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{getText("cancel", language)}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteList} className="bg-destructive text-destructive-foreground">
+                    {getText("delete", language)}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
 
-        <Card>
+        <PDFPreview open={showPDFPreview} onOpenChange={setShowPDFPreview} listId={id!} listName={title} />
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>{getText("listInformation", language)}</CardTitle>
+              <CardDescription>{getText("listDetails", language)}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-left">
+              <div className="space-y-1.5">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Label htmlFor="title" className="cursor-help">{getText("listTitle", language)}</Label>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>{getText("listTitleTooltip", language)}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Input id="title" placeholder={isEnglish ? "April Groceries" : "এপ্রিল মুদি"} value={title} onChange={e => setTitle(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="month" className="cursor-help">{getText("month", language)}</Label>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>{getText("monthTooltip", language)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger id="month">
+                      <SelectValue placeholder={getText("selectMonth", language)} />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      {MONTHS_EN.map((month, i) => (
+                        <SelectItem key={month} value={month}>
+                          {isEnglish ? month : MONTHS_BN[i]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="year" className="cursor-help">{getText("year", language)}</Label>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>{getText("yearTooltip", language)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger id="year">
+                      <SelectValue placeholder={getText("selectYear", language)} />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      {YEARS.map(year => (
+                        <SelectItem key={year.toString()} value={year.toString()}>
+                          {isEnglish ? year : toBengaliNumerals(year.toString())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleUpdateList} disabled={isLoading} className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50">
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {getText("saving", language)}
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        {getText("saveChanges", language)}
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-orange-600 text-white border-none">
+                  <p>{getText("saveListTooltip", language)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{getText("addItem", language)}</CardTitle>
+              <CardDescription>{getText("addNewItem", language)}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-left">
+              <GroceryItemForm listId={id!} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-6">
           <CardHeader>
-            <CardTitle>{getText("addItem", language)}</CardTitle>
-            <CardDescription>{getText("addNewItem", language)}</CardDescription>
+            <CardTitle>{getText("itemsInList", language)}</CardTitle>
+            <CardDescription className="text-left">
+              {isEnglish
+                ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
+                : `${toBengaliNumerals(list?.items.length || 0)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT", true)}`}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="text-left">
-            <GroceryItemForm listId={id!} />
+          <CardContent>
+            {list && <GroceryItemTable listId={id!} items={list.items} />}
           </CardContent>
         </Card>
-      </div>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>{getText("itemsInList", language)}</CardTitle>
-          <CardDescription>
-            {isEnglish
-              ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
-              : `${list?.items.length || 0} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT")}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {list && <GroceryItemTable listId={id!} items={list.items} />}
-        </CardContent>
-      </Card>
-    </DashboardLayout>
+      </DashboardLayout>
+    </TooltipProvider>
   );
 };
 

@@ -10,6 +10,13 @@ import { Loader2, Pencil, Plus, Sparkles } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from "uuid";
 import { isValidNumber, parseBengaliFloat, toBengaliNumerals } from "@/utils/numbers";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { getText } from "@/utils/translations";
 
 interface GroceryItemFormProps {
   listId: string;
@@ -165,56 +172,149 @@ export function GroceryItemForm({
       setIsGeneratingPrice(false);
     }
   };
-  return <form onSubmit={handleSubmit} className="space-y-4">
-    <div className="space-y-1.5">
-      <Label htmlFor="name">{isEnglish ? "Item Name" : "আইটেমের নাম"}</Label>
-      <Input id="name" placeholder={isEnglish ? "e.g., Rice, Chicken, Eggs" : "যেমন, চাল, মুরগি, ডিম"} value={name} onChange={e => setName(e.target.value)} />
-    </div>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="quantity">{isEnglish ? "Quantity" : "পরিমাণ"}</Label>
-        <Input id="quantity" type="text" inputMode="decimal" placeholder="1" value={quantity} onChange={e => handleQuantityChange(e.target.value)} />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="unit">{isEnglish ? "Unit" : "একক"}</Label>
-        <Select value={unit} onValueChange={setUnit}>
-          <SelectTrigger id="unit">
-            <SelectValue placeholder={isEnglish ? "Select unit" : "একক নির্বাচন করুন"} />
-          </SelectTrigger>
-          <SelectContent position="popper">
-            {UNITS.map((u, index) => <SelectItem key={u} value={u}>
-              {isEnglish ? u : UNITS_BN[index]}
-            </SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <Label htmlFor="price">{isEnglish ? "Estimated Price (BDT)" : "অনুমানিত মূল্য (৳)"}</Label>
-        <div className="flex items-center gap-1">
-          <Button type="button" size="sm" variant="outline" onClick={() => setIsManualEdit(!isManualEdit)} title={isEnglish ? "Manual" : "ম্যানুয়াল সম্পাদনা"}>
-            <Pencil className="mr-1.5 h-3.5 w-3.5" />
-            {isEnglish ? "Manual" : "ম্যানুয়াল"}
-          </Button>
-          <Button type="button" size="sm" variant="outline" onClick={handleGeneratePrice} disabled={isGeneratingPrice || !name || !quantity}>
-            {isGeneratingPrice ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
-            {isEnglish ? "Generate" : "তৈরি করুন"}
-          </Button>
+  return (
+    <TooltipProvider delayDuration={300}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-1.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Label htmlFor="name" className="cursor-help">{isEnglish ? "Item Name" : "আইটেমের নাম"}</Label>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>{getText("itemNameTooltip", language)}</p>
+            </TooltipContent>
+          </Tooltip>
+          <Input
+            id="name"
+            placeholder={isEnglish ? "e.g., Rice, Chicken, Eggs" : "যেমন, চাল, মুরগি, ডিম"}
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
         </div>
-      </div>
-      <Input id="price" disabled={!isManualEdit} type="text" inputMode="decimal" placeholder="0.00" value={estimatedPrice} onChange={e => {
-        if (isValidNumber(e.target.value)) {
-          setEstimatedPrice(e.target.value);
-        }
-      }} />
 
-    </div>
-    <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50" disabled={isLoading || localLoading}>
-      {isLoading || localLoading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : item ? isEnglish ? "Update Item" : "আইটেম আপডেট করুন" : <>
-        <Plus className="mr-1.5 h-4 w-4" />
-        {isEnglish ? "Add Item" : "আইটেম যোগ করুন"}
-      </>}
-    </Button>
-  </form>;
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Label htmlFor="quantity" className="cursor-help">{isEnglish ? "Quantity" : "পরিমাণ"}</Label>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{getText("quantityTooltip", language)}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Input
+              id="quantity"
+              type="text"
+              inputMode="decimal"
+              placeholder="1"
+              value={quantity}
+              onChange={e => handleQuantityChange(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Label htmlFor="unit" className="cursor-help">{isEnglish ? "Unit" : "একক"}</Label>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{getText("unitTooltip", language)}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Select value={unit} onValueChange={setUnit}>
+              <SelectTrigger id="unit">
+                <SelectValue placeholder={isEnglish ? "Select unit" : "একক নির্বাচন করুন"} />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                {UNITS.map((u, index) => (
+                  <SelectItem key={u} value={u}>
+                    {isEnglish ? u : UNITS_BN[index]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="price">{isEnglish ? "Estimated Price (BDT)" : "অনুমানিত মূল্য (৳)"}</Label>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsManualEdit(!isManualEdit)}
+                  >
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                    {isEnglish ? "Manual" : "ম্যানুয়াল"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{getText("manualPriceTooltip", language)}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGeneratePrice}
+                    disabled={isGeneratingPrice || !name || !quantity}
+                  >
+                    {isGeneratingPrice ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1.5 h-3.5 w-3.5" />}
+                    {isEnglish ? "Generate" : "তৈরি করুন"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{getText("generatePriceTooltip", language)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+          <Input
+            id="price"
+            disabled={!isManualEdit}
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={estimatedPrice}
+            onChange={e => {
+              if (isValidNumber(e.target.value)) {
+                setEstimatedPrice(e.target.value);
+              }
+            }}
+          />
+        </div>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="submit"
+              className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50 mt-2"
+              disabled={isLoading || localLoading}
+            >
+              {isLoading || localLoading ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : item ? (
+                isEnglish ? "Update Item" : "আইটেম আপডেট করুন"
+              ) : (
+                <>
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  {isEnglish ? "Add Item" : "আইটেম যোগ করুন"}
+                </>
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="bg-orange-600 text-white border-none">
+            <p>{getText("addItemTooltip", language)}</p>
+          </TooltipContent>
+        </Tooltip>
+      </form>
+    </TooltipProvider>
+  );
 }
