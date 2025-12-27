@@ -32,7 +32,7 @@ interface GroceryContextType {
   deleteList: (id: string) => Promise<void>;
   duplicateList: (id: string) => Promise<string>;
   getListById: (id: string) => GroceryList | undefined;
-  addItemToList: (listId: string, item: Omit<GroceryItem, "id" | "estimatedPrice">) => Promise<void>;
+  addItemToList: (listId: string, item: Omit<GroceryItem, "id" | "estimatedPrice"> & { estimatedPrice?: number | null }) => Promise<void>;
   updateItemInList: (listId: string, itemId: string, item: Partial<GroceryItem>) => Promise<void>;
   removeItemFromList: (listId: string, itemId: string) => Promise<void>;
   reorderItemsInList: (listId: string, items: GroceryItem[]) => Promise<void>;
@@ -382,8 +382,23 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
     setIsLoading(true);
     try {
-      // Use provided price or default to 0
-      const estimatedPrice = item.estimatedPrice || 0;
+      // Use provided price or generate one if missing
+      let estimatedPrice = item.estimatedPrice;
+
+      if (estimatedPrice === undefined || estimatedPrice === null) {
+        console.log(`No price provided for ${item.name}, generating one...`);
+        try {
+          estimatedPrice = await generatePriceSuggestion(item.name, item.quantity, item.unit);
+        } catch (error: any) {
+          console.error("Background price generation failed:", error);
+          toast({
+            title: "Price Generation Error",
+            description: error.message || "Failed to automatically estimate price.",
+            variant: "destructive"
+          });
+          estimatedPrice = 0;
+        }
+      }
 
       // Add item to database
       const { data, error } = await supabase
@@ -654,254 +669,29 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
         }
       });
 
+      // Handle network-level errors from the Supabase client
       if (error) {
-        console.error('Error calling generate-price function:', error);
-        throw new Error(error.message);
+        console.error('Supabase invoke error:', error);
+        throw new Error(error.message || 'Network error calling price function');
       }
 
-      if (!data || !data.price) {
-        throw new Error('Failed to generate price suggestion');
+      // Handle transparent errors from the Edge Function (200 OK + success: false)
+      if (data && data.success === false) {
+        console.error('Edge function returned error:', data.error);
+        throw new Error(data.error || 'Price generation failed');
       }
 
-      // Return the price in USD
+      // Validate successful response
+      if (!data || typeof data.price !== 'number') {
+        throw new Error('Invalid response from price function');
+      }
+
+      // Return the price from OpenAI/OpenRouter
       return data.price;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating price suggestion:', error);
-      // Fallback to mock pricing logic with realistic BDT prices
-      const basePriceBDT: Record<string, number> = {
-        // Rice & Grains
-        rice: 80,                    // per kg
-        চাল: 80,
-        'চাষি পোলাউ চাল': 140,      // per pcs (1kg pack)
-        'polao rice': 140,
-
-        // Proteins
-        chicken: 180,                // per kg
-        মুরগি: 180,
-        beef: 750,                   // per kg
-        গরুরমাংস: 750,
-        eggs: 14,                    // per piece
-        ডিম: 14,
-        fish: 500,                   // per kg
-        মাছ: 500,
-
-        // Dairy
-        milk: 90,                    // per liter
-        দুধ: 90,
-
-        // Staples
-        bread: 60,                   // per pack
-        রুটি: 60,
-        oil: 190,                    // per liter
-        তেল: 190,
-        'সরিষার তেল': 425,          // per liter (200g = ৳85)
-        'mustard oil': 425,
-        sugar: 130,                  // per kg
-        চিনি: 130,
-        salt: 40,                    // per kg
-        লবণ: 40,
-        'মোল্লা সুপার salt': 40,
-
-        // Vegetables
-        onion: 110,                  // per kg (updated from actual: 2kg = ৳220)
-        পেঁয়াজ: 110,
-        'পেঁয়াজ দেশি': 110,
-        potato: 50,                  // per kg
-        আলু: 50,
-        tomato: 100,                 // per kg
-        টমেটো: 100,
-        garlic: 160,                 // per kg (updated: 500g = ৳80)
-        রসুন: 160,
-        'রসুন দেশি': 160,
-        ginger: 160,                 // per kg (updated: 500g = ৳80)
-        আদা: 160,
-        'আদা দেশি': 160,
-
-        // Dals & Pulses
-        'দেশি মসুর ডাল': 140,       // per kg (2kg = ৳280)
-        'মসুর ডাল': 140,
-        'masoor dal': 140,
-        ডাবলি: 60,                   // per kg
-        'বুটের ডাল': 120,           // per kg
-        'boot dal': 120,
-        ছোলা: 110,                   // per kg
-        'chola': 110,
-
-        // Spices - per 100g pricing (converted to per kg for calculation)
-        জিরা: 600,                   // per kg (250g = ৳150)
-        'cumin': 600,
-        'ধনিয়া গুঁড়া': 550,        // per kg (100g = ৳55)
-        'coriander powder': 550,
-        'কালো জিরা': 600,           // per kg (100g = ৳60)
-        'black cumin': 600,
-        'পাঁচ ফোড়ন': 400,          // per kg (100g = ৳40)
-        'panch phoron': 400,
-        এলাচ: 5000,                  // per kg (100g = ৳500) - expensive
-        'cardamom': 5000,
-        দারচিনি: 600,                // per kg (100g = ৳60)
-        'cinnamon': 600,
-        লবঙ্গ: 1600,                 // per kg (50g = ৳80)
-        'clove': 1600,
-        'শুকনা মরিচ': 400,          // per kg (50g = ৳20)
-        'dry chili': 400,
-        সরিষা: 200,                  // per kg (100g = ৳20)
-        'mustard seeds': 200,
-        'রাঁধুনি বিরিয়ানি মশলা': 55, // per pcs
-
-        // Nuts & Dry Fruits
-        'কাঠ বাদাম': 1300,          // per kg (200g = ৳260)
-        'almonds': 1300,
-        'কাজু বাদাম': 1500,         // per kg (200g = ৳300)
-        'cashew': 1500,
-        কিসমিস: 900,                 // per kg (200g = ৳180)
-        'raisins': 900,
-        'পেস্তা বাদাম': 2500,         // per kg (100g = ৳250)
-        'pistachio': 2500,
-
-        // Sauces & Condiments
-        'টমেটো সস': 110,            // per pcs (small)
-        'tomato sauce': 110,
-        'চিলি সস': 130,             // per pcs (small)
-        'chili sauce': 130,
-        'লাইট সয়াসস': 80,          // per pcs (small)
-        'soy sauce': 80,
-
-        // Cleaning Products
-        'wheel গুঁড়া সাবান': 125,   // per kg
-        'surf excel গুঁড়া সাবান': 210, // per kg
-        'surf excel': 210,
-        'meril সাবান': 50,          // per pcs (small)
-        'wheel bar': 28,             // per pcs
-        'harpic powder': 95,         // per pcs
-        'harpic': 150,               // per pcs
-        'handwash refill': 80,       // per pcs
-        'lifebuoy handwash': 80,
-        'trix bar': 35,              // per pcs
-        'trix refil': 70,            // per pcs
-        'lizol': 260,                // per liter
-        'lizol lemon': 260,
-
-        // Personal Care
-        'shampoo': 5,                // per mini pack pcs
-        'all clear shampoo': 5,
-        'pepsodent toothpaste': 170, // per pcs
-        'toothpaste': 170,
-
-        // Pasta & Snacks
-        'kolson macaroni': 75,       // per pcs
-        'pasta': 75,
-        'macaroni': 75,
-        'কাঁচা ফুচকা': 80,          // per pcs (small pack)
-        'fuchka': 80,
-      };
-
-      // Helper function to find the best matching price from the database
-      const findBestPriceMatch = (name: string): { price: number; isPieceBased: boolean } | null => {
-        const nameLower = name.toLowerCase().trim();
-        const nameOriginal = name.trim();
-
-        // Items that are priced per piece (not per kg)
-        const pieceBasedItems = [
-          'eggs', 'ডিম', 'bread', 'রুটি', 'shampoo', 'toothpaste', 'soap', 'সাবান',
-          'harpic', 'trix', 'lizol', 'handwash', 'sauce', 'সস', 'pasta', 'macaroni',
-          'ফুচকা', 'মশলা', 'pcs', 'pack', 'bottle', 'বোতল'
-        ];
-
-        const isPieceBased = pieceBasedItems.some(item =>
-          nameLower.includes(item) || nameOriginal.includes(item)
-        );
-
-        // Direct match (case-insensitive for English, exact for Bangla)
-        if (basePriceBDT[nameLower] !== undefined) {
-          return { price: basePriceBDT[nameLower], isPieceBased };
-        }
-        if (basePriceBDT[nameOriginal] !== undefined) {
-          return { price: basePriceBDT[nameOriginal], isPieceBased };
-        }
-
-        // Partial match - find if any key contains the search term or vice versa
-        for (const [key, price] of Object.entries(basePriceBDT)) {
-          const keyLower = key.toLowerCase();
-          // Check if the item name contains the key or key contains item name
-          if (nameLower.includes(keyLower) || keyLower.includes(nameLower)) {
-            return { price, isPieceBased };
-          }
-          // Check original (for Bangla text)
-          if (nameOriginal.includes(key) || key.includes(nameOriginal)) {
-            return { price, isPieceBased };
-          }
-        }
-
-        // Word-by-word partial match
-        const words = nameLower.split(/\s+/);
-        for (const word of words) {
-          if (word.length < 3) continue; // Skip very short words
-          for (const [key, price] of Object.entries(basePriceBDT)) {
-            if (key.toLowerCase().includes(word) || word.includes(key.toLowerCase())) {
-              return { price, isPieceBased };
-            }
-          }
-        }
-
-        return null;
-      };
-
-      const matchResult = findBestPriceMatch(itemName);
-
-      // Default fallback price if no match found
-      const defaultPrice = 100; // ৳100 as sensible default
-      const basePrice = matchResult?.price ?? defaultPrice;
-      const isPieceBased = matchResult?.isPieceBased ?? false;
-
-      // Calculate price based on unit
-      let calculatedPrice: number;
-      const unitLower = unit.toLowerCase().trim();
-
-      if (isPieceBased) {
-        // For piece-based items, just multiply by quantity
-        calculatedPrice = basePrice * quantity;
-      } else {
-        // For weight/volume based items, apply unit conversion
-        switch (unitLower) {
-          case 'kg':
-            calculatedPrice = basePrice * quantity;
-            break;
-          case 'g':
-            calculatedPrice = (basePrice / 1000) * quantity;
-            break;
-          case 'lb':
-            calculatedPrice = basePrice * 0.45 * quantity;
-            break;
-          case 'l':
-          case 'liter':
-          case 'litre':
-            calculatedPrice = basePrice * quantity;
-            break;
-          case 'ml':
-            calculatedPrice = (basePrice / 1000) * quantity;
-            break;
-          case 'dozen':
-            calculatedPrice = basePrice * 12 * quantity;
-            break;
-          case 'pcs':
-          case 'pieces':
-          case 'piece':
-          case 'pack':
-          case 'pkt':
-          case 'packet':
-            calculatedPrice = basePrice * quantity;
-            break;
-          default:
-            // Default to treating as quantity multiplier
-            calculatedPrice = basePrice * quantity;
-        }
-      }
-
-      // Round to nearest 5 BDT for cleaner prices
-      const roundedPrice = Math.round(calculatedPrice / 5) * 5;
-
-      // Ensure minimum price of 10 BDT
-      return Math.max(roundedPrice, 10);
+      // Re-throw so the UI can capture the error message
+      throw error;
     }
   };
 

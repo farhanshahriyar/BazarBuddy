@@ -122,7 +122,8 @@ export function GroceryItemForm({
           await addItemToList(listId, {
             name,
             quantity: parsedQuantity,
-            unit
+            unit,
+            estimatedPrice: parsedPrice
           });
           // Reset form
           setName("");
@@ -165,7 +166,7 @@ export function GroceryItemForm({
       console.error("Error generating price:", error);
       toast({
         title: isEnglish ? "Error" : "ত্রুটি",
-        description: isEnglish ? "Failed to generate price suggestion." : "মূল্য প্রস্তাব তৈরি করতে ব্যর্থ।",
+        description: error instanceof Error ? error.message : (isEnglish ? "AI failed to generate price suggestion." : "AI মূল্য প্রস্তাব তৈরি করতে ব্যর্থ।"),
         variant: "destructive"
       });
     } finally {
