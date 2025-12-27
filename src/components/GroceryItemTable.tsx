@@ -81,7 +81,7 @@ function SortableRow({ item, isEnglish, onEdit, onDelete }: SortableRowProps) {
         {isEnglish ? item.quantity : toBengaliNumerals(item.quantity)} {item.unit}
       </TableCell>
       <TableCell className="text-right">
-        {item.estimatedPrice ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : "N/A"}
+        {item.estimatedPrice !== null ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : "N/A"}
       </TableCell>
       <TableCell>
         <DropdownMenu>

@@ -68,13 +68,14 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
   const { user } = useAuth();
   const [lists, setLists] = useState<GroceryList[]>([]);
   const [currentList, setCurrentList] = useState<GroceryList | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load lists from database when user changes
   useEffect(() => {
     const fetchLists = async () => {
       if (!user) {
         setLists([]);
+        setIsLoading(false);
         return;
       }
 
@@ -754,6 +755,8 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
         'cashew': 1500,
         কিসমিস: 900,                 // per kg (200g = ৳180)
         'raisins': 900,
+        'পেস্তা বাদাম': 2500,         // per kg (100g = ৳250)
+        'pistachio': 2500,
 
         // Sauces & Condiments
         'টমেটো সস': 110,            // per pcs (small)

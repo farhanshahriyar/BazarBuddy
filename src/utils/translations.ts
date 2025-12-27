@@ -274,6 +274,8 @@ type TranslationKey =
   | "monthTooltip"
   | "yearTooltip"
   | "saveListTooltip"
+  | "listNotFound"
+  | "listNotFoundDesc"
   | "january" | "february" | "march" | "april" | "may" | "june"
   | "july" | "august" | "september" | "october" | "november" | "december";
 
@@ -708,6 +710,14 @@ export const translations: Translations = {
   saveListTooltip: {
     en: "Click to permanently save your grocery list.",
     bn: "আপনার মুদি তালিকাটি স্থায়ীভাবে সংরক্ষণ করতে ক্লিক করুন।"
+  },
+  listNotFound: {
+    en: "List Not Found",
+    bn: "তালিকা পাওয়া যায়নি"
+  },
+  listNotFoundDesc: {
+    en: "The grocery list you are looking for does not exist or has been deleted.",
+    bn: "আপনি যে মুদি তালিকাটি খুঁজছেন তা বিদ্যমান নেই বা মুছে ফেলা হয়েছে।"
   },
 };
 

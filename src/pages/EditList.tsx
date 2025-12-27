@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGrocery } from "@/contexts/GroceryContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/utils/currency";
 import { getText } from "@/utils/translations";
@@ -35,8 +36,11 @@ import { toBengaliNumerals } from "@/utils/numbers";
 const EditList = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getListById, updateList, deleteList, downloadListAsPdf, isLoading } = useGrocery();
+  const { getListById, updateList, deleteList, downloadListAsPdf, isLoading: groceryLoading } = useGrocery();
+  const { isLoading: authLoading } = useAuth();
   const { language, isEnglish } = useLanguage();
+
+  const isLoading = groceryLoading || authLoading;
 
   const [title, setTitle] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -48,12 +52,14 @@ const EditList = () => {
   const displayMonths = isEnglish ? MONTHS_EN : MONTHS_BN;
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (id) {
       const list = getListById(id);
       if (list) {
-        setTitle(list.title);
-        setSelectedMonth(list.month);
-        setSelectedYear(list.year.toString());
+        setTitle(list.title || "");
+        setSelectedMonth(list.month || "");
+        setSelectedYear(list.year?.toString() || "");
         setListExists(true);
       } else {
         toast({
@@ -65,7 +71,7 @@ const EditList = () => {
       }
     }
     setLocalLoading(false);
-  }, [id, getListById, navigate]);
+  }, [id, getListById, navigate, isLoading]);
 
   const handleUpdateList = async () => {
     if (!id) return;
@@ -275,7 +281,7 @@ const EditList = () => {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>{getText("itemsInList", language)}</CardTitle>
-            <CardDescription className="text-left">
+            <CardDescription className="text-center">
               {isEnglish
                 ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
                 : `${toBengaliNumerals(list?.items.length || 0)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT", true)}`}
