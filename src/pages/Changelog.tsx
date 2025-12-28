@@ -44,24 +44,26 @@ const Changelog = () => {
             version: "v1.2.1",
             date: isEnglish ? "Dec 28, 2025" : "২৮ ডিসেম্বর, ২০২৫",
             title: isEnglish
-                ? "Core Setup & Initial Grocery Context"
-                : "কোর সেটআপ ও প্রাথমিক মুদি কনটেক্সট",
+                ? "Core Setup, Initial Grocery Context & Drag and Drop System"
+                : "কোর সেটআপ, প্রাথমিক মুদি কনটেক্সট এবং ড্রাগ এবং ড롭 সিস্টেম",
             label: getText("improvement", language),
             type: "improved",
-            image: "",
+            image: "https://gmcbt9ucve.ufs.sh/f/u4KE8aYHPK05oPQ0duPItDfJd763B2xZ185hWswQrSMNaG0v",
             description: isEnglish
-                ? "This patch improves the internal foundation by adding core application components, essential user pages, and the initial grocery list context."
-                : "এই প্যাচ আপডেটে কোর অ্যাপ কম্পোনেন্ট, প্রয়োজনীয় ইউজার পেজ এবং প্রাথমিক মুদি তালিকা কনটেক্সট যুক্ত করে অ্যাপের ভিত্তি আরও মজবুত করা হয়েছে।",
+                ? "This patch improves the internal foundation by adding core application components, essential user pages, the initial grocery list context and drag and drop system."
+                : "এই প্যাচ আপডেটে কোর অ্যাপ কম্পোনেন্ট, প্রয়োজনীয় ইউজার পেজ, প্রাথমিক মুদি তালিকা কনটেক্সট এবং ড্রাগ সিস্টেম যুক্ত করে অ্যাপের ভিত্তি আরও মজবুত করা হয়েছে।",
             points: isEnglish
                 ? [
                     "Added core application components required for initial app setup.",
                     "Introduced essential user pages to support early user flows.",
-                    "Implemented the first version of the **Grocery List Context**."
+                    "Implemented the first version of the **Grocery List Context**.",
+                    "Added the Drag and Drop system of the **Grocery List Table**.",
                 ]
                 : [
                     "প্রাথমিক সেটআপের জন্য কোর অ্যাপ্লিকেশন কম্পোনেন্ট যোগ করা হয়েছে।",
                     "শুরুর ইউজার ফ্লোর জন্য প্রয়োজনীয় ইউজার পেজ যুক্ত করা হয়েছে।",
-                    "প্রথমবারের মতো **Grocery লিস্ট কনটেক্সট** ইমপ্লিমেন্ট করা হয়েছে।"
+                    "প্রথমবারের মতো **Grocery লিস্ট কনটেক্সট** ইমপ্লিমেন্ট করা হয়েছে।",
+                    "**মুদি তালিকা টেবিল** এর জন্য ড্রাগ এবং ড롭 সিস্টেম যোগ করা হয়েছে।"
                 ],
             author: {
                 name: "Farhan Shahriyar",
@@ -73,12 +75,12 @@ const Changelog = () => {
             version: "v1.2.0",
             date: isEnglish ? "Dec 27, 2025" : "২৭ ডিসেম্বর, ২০২৫",
             title: isEnglish
-                ? "AI-Powered Grocery Management & Smart Printing"
-                : "AI-চালিত মুদি ব্যবস্থাপনা ও স্মার্ট প্রিন্টিং",
+                ? "AI-Powered Grocery Management"
+                : "AI-চালিত মুদি ব্যবস্থাপনা",
             label: getText("newFeature", language),
             type: "added",
             image:
-                "",
+                "https://gmcbt9ucve.ufs.sh/f/u4KE8aYHPK051h9GYdgkYKfIoji5JaG76S8zmRtelVZMnXPB",
             description: isEnglish
                 ? "This release delivers a major upgrade to grocery item management with AI-powered price suggestions, multilingual support, and professional-grade print exports."
                 : "এই রিলিজে AI-চালিত মূল্য পরামর্শ, বহুভাষা সমর্থন এবং প্রফেশনাল প্রিন্ট এক্সপোর্ট সহ মুদি ব্যবস্থাপনায় বড় আপগ্রেড আনা হয়েছে।",
@@ -196,11 +198,7 @@ const Changelog = () => {
                                 {getText("subscribeUpdates", language)}
                                 <ChevronRight size={14} className="opacity-30 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <button className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-all group">
-                                <Twitter size={18} className="group-hover:scale-110 transition-transform" />
-                                {getText("followTwitter", language)}
-                                <ChevronRight size={14} className="opacity-30 group-hover:translate-x-1 transition-transform" />
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -270,7 +268,7 @@ const Changelog = () => {
                                         {release.points && (release.points.length > 0 && (
                                             <ul className="space-y-4 pl-1">
                                                 {release.points.map((point, idx) => (
-                                                    <li key={idx} className="flex gap-4 items-start text-base">
+                                                    <li key={idx} className="flex gap-4 text-base text-left">
                                                         <span className="mt-2 w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] shrink-0"></span>
                                                         <span dangerouslySetInnerHTML={{ __html: point.replace(/\*\*(.*?)\*\*/g, '<b class="text-white font-bold">$1</b>') }}></span>
                                                     </li>

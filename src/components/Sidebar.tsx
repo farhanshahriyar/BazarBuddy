@@ -104,13 +104,14 @@ export function Sidebar({ className }: SidebarProps) {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/billing")} disabled={true} className="focus:bg-orange-50 focus:text-orange-950 cursor-pointer py-2.5">
+        {/* future implementation purpose */}
+        {/* <DropdownMenuItem onClick={() => navigate("/billing")} disabled={true} className="focus:bg-orange-50 focus:text-orange-950 cursor-pointer py-2.5">
           <DollarSign className="mr-3 h-4 w-4 text-muted-foreground" />
           <p className="text-sm font-medium">
             {getText("billing", language) || "Billing"}
           </p>
           <DropdownMenuShortcut className="ml-auto opacity-50">⌘B</DropdownMenuShortcut>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-orange-50 focus:text-orange-950 cursor-pointer py-2.5">
           <Settings2Icon className="mr-3 h-4 w-4 text-muted-foreground" />
           <p className="text-sm font-medium">
