@@ -42,7 +42,7 @@ const Profile = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-left">
               {getText("profilePageTitle", language)}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-left">
               {getText("accountInfo", language)}
             </p>
           </div>

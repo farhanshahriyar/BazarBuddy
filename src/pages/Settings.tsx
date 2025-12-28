@@ -14,6 +14,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getText } from "@/utils/translations";
 import { toast } from "@/components/ui/use-toast";
 import { Languages, History, MessageSquare, Send, Loader2, Download, ArrowDownToLine } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -40,17 +41,38 @@ const Settings = () => {
 
     setIsSubmitting(true);
 
-    // Simulate form submission (can be connected to backend later)
-    setTimeout(() => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { error } = await supabase
+        .from('feedback')
+        .insert({
+          type: feedbackType,
+          description: feedbackDescription,
+          email: feedbackEmail || null,
+          user_id: user?.id || null
+        });
+
+      if (error) throw error;
+
       toast({
         title: getText("feedbackSuccess", language),
         description: isEnglish ? "We'll review your feedback soon." : "আমরা শীঘ্রই আপনার মতামত পর্যালোচনা করব।"
       });
+
       setFeedbackType("");
       setFeedbackDescription("");
       setFeedbackEmail("");
+    } catch (error: any) {
+      console.error("Feedback error:", error);
+      toast({
+        title: getText("feedbackError", language),
+        description: error.message || (isEnglish ? "An unexpected error occurred." : "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে।"),
+        variant: "destructive"
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -61,15 +83,15 @@ const Settings = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-left">
               {getText("settingsPageTitle", language)}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-left">
               {isEnglish ? "Manage your preferences" : "আপনার পছন্দগুলি পরিচালনা করুন"}
             </p>
           </div>
         </div>
 
         {/* Language Preference */}
-        <Card className="card-gradient mb-6 flex justify-between items-center">
-          <CardHeader>
+        <Card className="card-gradient mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center overflow-hidden">
+          <CardHeader className="w-full sm:w-auto">
             <CardTitle className="flex items-center gap-2">
               <Languages className="h-5 w-5" />
               {getText("languagePreference", language)}
@@ -78,26 +100,26 @@ const Settings = () => {
               {isEnglish ? "Choose your preferred language" : "আপনার পছন্দের ভাষা নির্বাচন করুন"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="w-full sm:w-auto pb-6 sm:pb-0 sm:pr-6">
             <LanguageSwitcher />
           </CardContent>
         </Card>
 
         {/* Download Full Report */}
-        <Card className="card-gradient mb-6 flex justify-between items-center">
-          <CardHeader>
+        <Card className="card-gradient mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center overflow-hidden">
+          <CardHeader className="w-full sm:w-auto">
             <CardTitle className="flex items-center gap-2">
-              <Download className="h-5 v-5" />
+              <Download className="h-5 w-5" />
               {getText("downloadFullReport", language)}
             </CardTitle>
             <CardDescription className="text-left">
               {getText("downloadFullReportDesc", language)}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="w-full sm:w-auto pb-6 sm:pb-0 sm:pr-6">
             <Button
               onClick={() => navigate("/full-report-preview")}
-              className="bg-orange-600 hover:bg-orange-500 text-white"
+              className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white"
               disabled={lists.length === 0}
             >
               <Download className="mr-2 h-4 w-4" />

@@ -41,6 +41,35 @@ const Changelog = () => {
 
     const changelogData: ChangelogItem[] = [
         {
+            version: "v1.2.1",
+            date: isEnglish ? "Dec 28, 2025" : "২৮ ডিসেম্বর, ২০২৫",
+            title: isEnglish
+                ? "Core Setup & Initial Grocery Context"
+                : "কোর সেটআপ ও প্রাথমিক মুদি কনটেক্সট",
+            label: getText("improvement", language),
+            type: "improved",
+            image: "",
+            description: isEnglish
+                ? "This patch improves the internal foundation by adding core application components, essential user pages, and the initial grocery list context."
+                : "এই প্যাচ আপডেটে কোর অ্যাপ কম্পোনেন্ট, প্রয়োজনীয় ইউজার পেজ এবং প্রাথমিক মুদি তালিকা কনটেক্সট যুক্ত করে অ্যাপের ভিত্তি আরও মজবুত করা হয়েছে।",
+            points: isEnglish
+                ? [
+                    "Added core application components required for initial app setup.",
+                    "Introduced essential user pages to support early user flows.",
+                    "Implemented the first version of the **Grocery List Context**."
+                ]
+                : [
+                    "প্রাথমিক সেটআপের জন্য কোর অ্যাপ্লিকেশন কম্পোনেন্ট যোগ করা হয়েছে।",
+                    "শুরুর ইউজার ফ্লোর জন্য প্রয়োজনীয় ইউজার পেজ যুক্ত করা হয়েছে।",
+                    "প্রথমবারের মতো **Grocery লিস্ট কনটেক্সট** ইমপ্লিমেন্ট করা হয়েছে।"
+                ],
+            author: {
+                name: "Farhan Shahriyar",
+                role: getText("Software Engineer", language),
+                avatar:
+                    "https://gmcbt9ucve.ufs.sh/f/u4KE8aYHPK05ZJU2qBzFdAKrCIUlGvLZtyxwo92X15qpjH3c"
+            }
+        }, {
             version: "v1.2.0",
             date: isEnglish ? "Dec 27, 2025" : "২৭ ডিসেম্বর, ২০২৫",
             title: isEnglish
