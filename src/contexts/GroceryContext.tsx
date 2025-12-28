@@ -38,6 +38,7 @@ interface GroceryContextType {
   reorderItemsInList: (listId: string, items: GroceryItem[]) => Promise<void>;
   generatePriceSuggestion: (itemName: string, quantity: number, unit: string) => Promise<number>;
   downloadListAsPdf: (listId: string) => Promise<void>;
+  downloadFullReport: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -696,6 +697,148 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
   };
 
   // Function to download list as PDF with enhanced Bangla support
+  const downloadFullReport = async () => {
+    if (lists.length === 0) {
+      toast({
+        title: "No Data",
+        description: "You don't have any grocery lists yet.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Import jspdf dynamically
+      const { default: jsPDF } = await import('jspdf');
+      const { default: autoTable } = await import('jspdf-autotable');
+
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      // Report Header
+      doc.setFontSize(22);
+      doc.setTextColor(255, 140, 0); // Orange color
+      doc.text("BazarBuddy - Full Report", 20, 20);
+
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, 28);
+
+      doc.setDrawColor(255, 140, 0);
+      doc.line(20, 32, 190, 32);
+
+      // Summary Stats
+      const totalSpent = lists.reduce((sum, list) => sum + list.totalEstimatedPrice, 0);
+      const totalItems = lists.reduce((sum, list) => sum + list.items.length, 0);
+
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Account Summary", 20, 45);
+
+      doc.setFontSize(10);
+      doc.text(`Total Lists: ${lists.length}`, 25, 52);
+      doc.text(`Total Items: ${totalItems}`, 25, 58);
+      doc.text(`Total Estimated Cost: BDT ${totalSpent.toFixed(2)}`, 25, 64);
+
+      let currentY = 75;
+
+      // Add each list
+      for (const list of lists) {
+        // Check if we need a new page
+        if (currentY + 40 > doc.internal.pageSize.height) {
+          doc.addPage();
+          currentY = 20;
+        }
+
+        doc.setFontSize(16);
+        doc.setTextColor(255, 140, 0);
+        doc.text(`${list.title}`, 20, currentY);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`${list.month} ${list.year}`, 20, currentY + 6);
+
+        autoTable(doc, {
+          startY: currentY + 10,
+          head: [['Item', 'Quantity', 'Unit', 'Price (BDT)']],
+          body: list.items.map(item => [
+            item.name,
+            item.quantity.toString(),
+            item.unit,
+            (item.estimatedPrice || 0).toFixed(2)
+          ]),
+          foot: [['', '', 'Total:', `BDT ${list.totalEstimatedPrice.toFixed(2)}`]],
+          theme: 'striped',
+          headStyles: {
+            fillColor: [255, 140, 0],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            halign: 'center'
+          },
+          footStyles: {
+            fillColor: [255, 237, 213],
+            textColor: [234, 88, 12],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [255, 251, 235]
+          },
+          margin: { left: 20, right: 20 },
+          styles: {
+            font: 'helvetica',
+            fontSize: 9,
+            cellPadding: 3
+          },
+          columnStyles: {
+            0: { halign: 'left' },
+            1: { halign: 'center' },
+            2: { halign: 'center' },
+            3: { halign: 'right' }
+          }
+        });
+
+        // @ts-ignore - lastAutoTable exists on the doc after call
+        currentY = doc.lastAutoTable.finalY + 15;
+      }
+
+      // Add footer to all pages
+      const pageCount = (doc as any).internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `BazarBuddy - Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.width / 2,
+          doc.internal.pageSize.height - 10,
+          { align: 'center' }
+        );
+      }
+
+      doc.save("BazarBuddy_Full_Report.pdf");
+
+      toast({
+        title: "Report Generated",
+        description: "Your full report has been downloaded successfully."
+      });
+
+    } catch (error) {
+      console.error("Error generating full report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate full report PDF.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const downloadListAsPdf = async (listId: string) => {
     const list = getListById(listId);
     if (!list) {
@@ -831,6 +974,7 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
     reorderItemsInList,
     generatePriceSuggestion,
     downloadListAsPdf,
+    downloadFullReport,
     isLoading
   };
 

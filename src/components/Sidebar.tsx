@@ -14,6 +14,7 @@ import {
   User,
   DollarSign,
   Settings2Icon,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
@@ -68,6 +69,11 @@ export function Sidebar({ className }: SidebarProps) {
       name: getText("history", language),
       href: "/list-history",
       icon: <ListMusic size={18} />,
+    },
+    {
+      name: getText("changelog", language),
+      href: "/changelog",
+      icon: <Sparkles size={18} />,
     },
   ];
 

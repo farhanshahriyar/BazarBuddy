@@ -277,6 +277,39 @@ type TranslationKey =
   | "estimatedPriceTooltip"
   | "listNotFound"
   | "listNotFoundDesc"
+  | "profilePageTitle"
+  | "accountInfo"
+  | "memberSince"
+  | "changePassword"
+  | "totalListsCreated"
+  | "totalItemsAdded"
+  | "totalAmountSpent"
+  | "settingsPageTitle"
+  | "languagePreference"
+  | "changelog"
+  | "supportForm"
+  | "feedbackType"
+  | "feedbackDescription"
+  | "submitFeedback"
+  | "feedbackSuccess"
+  | "feedbackError"
+  | "selectFeedbackType"
+  | "bugReport"
+  | "featureRequest"
+  | "generalFeedback"
+  | "downloadFullReport"
+  | "changelogSubtitle"
+  | "newFeature"
+  | "improvement"
+  | "appUpdate"
+  | "productManager"
+  | "aiLead"
+  | "designer"
+  | "developer"
+  | "subscribeUpdates"
+  | "followTwitter"
+  | "downloadFullReportDesc"
+  | "downloadReport"
   | "january" | "february" | "march" | "april" | "may" | "june"
   | "july" | "august" | "september" | "october" | "november" | "december";
 
@@ -723,6 +756,138 @@ export const translations: Translations = {
   listNotFoundDesc: {
     en: "The grocery list you are looking for does not exist or has been deleted.",
     bn: "আপনি যে মুদি তালিকাটি খুঁজছেন তা বিদ্যমান নেই বা মুছে ফেলা হয়েছে।"
+  },
+  profilePageTitle: {
+    en: "Profile",
+    bn: "প্রোফাইল"
+  },
+  accountInfo: {
+    en: "Account Information",
+    bn: "অ্যাকাউন্ট তথ্য"
+  },
+  memberSince: {
+    en: "Member Since",
+    bn: "সদস্য থেকে"
+  },
+  changePassword: {
+    en: "Change Password",
+    bn: "পাসওয়ার্ড পরিবর্তন করুন"
+  },
+  totalListsCreated: {
+    en: "Total Lists Created",
+    bn: "মোট তালিকা তৈরি"
+  },
+  totalItemsAdded: {
+    en: "Total Items Added",
+    bn: "মোট আইটেম যোগ করা হয়েছে"
+  },
+  totalAmountSpent: {
+    en: "Total Amount Spent",
+    bn: "মোট খরচ"
+  },
+  settingsPageTitle: {
+    en: "Settings",
+    bn: "সেটিংস"
+  },
+  languagePreference: {
+    en: "Language Preference",
+    bn: "ভাষা পছন্দ"
+  },
+  changelog: {
+    en: "Changelog",
+    bn: "পরিবর্তন লগ"
+  },
+  supportForm: {
+    en: "Support & Feedback",
+    bn: "সহায়তা ও মতামত"
+  },
+  feedbackType: {
+    en: "Feedback Type",
+    bn: "মতামতের ধরন"
+  },
+  feedbackDescription: {
+    en: "Description",
+    bn: "বিবরণ"
+  },
+  submitFeedback: {
+    en: "Submit Feedback",
+    bn: "মতামত জমা দিন"
+  },
+  feedbackSuccess: {
+    en: "Thank you for your feedback!",
+    bn: "আপনার মতামতের জন্য ধন্যবাদ!"
+  },
+  feedbackError: {
+    en: "Failed to submit feedback. Please try again.",
+    bn: "মতামত জমা দিতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।"
+  },
+  selectFeedbackType: {
+    en: "Select feedback type",
+    bn: "মতামতের ধরন নির্বাচন করুন"
+  },
+  bugReport: {
+    en: "Bug Report",
+    bn: "বাগ রিপোর্ট"
+  },
+  featureRequest: {
+    en: "Feature Request",
+    bn: "বৈশিষ্ট্য অনুরোধ"
+  },
+  generalFeedback: {
+    en: "General Feedback",
+    bn: "সাধারণ মতামত"
+  },
+  downloadFullReport: {
+    en: "Download Full Report",
+    bn: "সম্পূর্ণ রিপোর্ট ডাউনলোড করুন"
+  },
+  downloadFullReportDesc: {
+    en: "Download a comprehensive report of all your grocery lists and spending history in PDF format.",
+    bn: "আপনার সমস্ত মুদি তালিকা এবং খরচের ইতিহাসের একটি বিস্তৃত রিপোর্ট পিডিএফ ফরম্যাটে ডাউনলোড করুন।"
+  },
+  downloadReport: {
+    en: "Download Report",
+    bn: "রিপোর্ট ডাউনলোড করুন"
+  },
+  changelogSubtitle: {
+    en: "Latest features and enhancements",
+    bn: "সর্বশেষ বৈশিষ্ট্য এবং উন্নতি",
+  },
+  newFeature: {
+    en: "New Feature",
+    bn: "নতুন বৈশিষ্ট্য",
+  },
+  improvement: {
+    en: "Improvement",
+    bn: "উন্নতি",
+  },
+  appUpdate: {
+    en: "Update",
+    bn: "আপডেট",
+  },
+  productManager: {
+    en: "Product Manager",
+    bn: "প্রোডাক্ট ম্যানেজার",
+  },
+  aiLead: {
+    en: "AI Research Lead",
+    bn: "AI রিসার্চ লিড",
+  },
+  designer: {
+    en: "Lead Designer",
+    bn: "লিড ডিজাইনার",
+  },
+  developer: {
+    en: "Lead Developer",
+    bn: "লিড ডেভেলপার",
+  },
+  subscribeUpdates: {
+    en: "Subscribe to updates",
+    bn: "আপডেট সাবস্ক্রাইব করুন",
+  },
+  followTwitter: {
+    en: "Follow on Twitter",
+    bn: "টুইটারে ফলো করুন",
   },
 };
 

@@ -16,6 +16,8 @@ import { Toaster } from "@/components/ui/toaster";
 import PrintPreview from "./components/PrintPreview";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import FullReportPreview from "./pages/FullReportPreview";
+import Changelog from "./pages/Changelog";
 
 function App() {
   return (
@@ -32,9 +34,11 @@ function App() {
           <Route path="/create-list" element={<CreateList />} />
           <Route path="/edit-list/:id" element={<EditList />} />
           <Route path="/history" element={<ListHistory />} />
-          <Route path="/list-history" element={<ListHistory />} /> 
-          <Route path="/settings" element={<Settings/>} />
-          <Route path="/profile" element={<Profile/>} />
+          <Route path="/list-history" element={<ListHistory />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/full-report-preview" element={<FullReportPreview />} />
+          <Route path="/changelog" element={<Changelog />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
