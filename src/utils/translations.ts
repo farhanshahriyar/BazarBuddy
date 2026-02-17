@@ -311,7 +311,15 @@ type TranslationKey =
   | "downloadFullReportDesc"
   | "downloadReport"
   | "january" | "february" | "march" | "april" | "may" | "june"
-  | "july" | "august" | "september" | "october" | "november" | "december";
+  | "july" | "august" | "september" | "october" | "november" | "december"
+  | "missingInfo"
+  | "pleaseProvideTitle"
+  | "emptyList"
+  | "emptyListDesc"
+  | "pdfError"
+  | "pdfFallback"
+  | "searchItems"
+  | "noItemsMatch";
 
 
 
@@ -888,6 +896,38 @@ export const translations: Translations = {
   followTwitter: {
     en: "Follow on Twitter",
     bn: "টুইটারে ফলো করুন",
+  },
+  missingInfo: {
+    en: "Missing Information",
+    bn: "তথ্য অনুপস্থিত",
+  },
+  pleaseProvideTitle: {
+    en: "Please provide a title for your grocery list.",
+    bn: "অনুগ্রহ করে আপনার মুদি তালিকার জন্য একটি শিরোনাম দিন।",
+  },
+  emptyList: {
+    en: "Empty List",
+    bn: "খালি তালিকা",
+  },
+  emptyListDesc: {
+    en: "Please add at least one item to your grocery list.",
+    bn: "অনুগ্রহ করে আপনার মুদি তালিকায় অন্তত একটি আইটেম যোগ করুন।",
+  },
+  pdfError: {
+    en: "PDF Generation Error",
+    bn: "পিডিএফ তৈরিতে ত্রুটি",
+  },
+  pdfFallback: {
+    en: "Could not generate PDF. Try the preview instead.",
+    bn: "পিডিএফ তৈরি করা যায়নি। প্রিভিউ ব্যবহার করে দেখুন।",
+  },
+  searchItems: {
+    en: "Search items...",
+    bn: "আইটেম খুঁজুন...",
+  },
+  noItemsMatch: {
+    en: "No items match your search.",
+    bn: "আপনার অনুসন্ধানের সাথে কোনো আইটেম মেলেনি।",
   },
 };
 

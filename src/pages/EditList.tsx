@@ -16,14 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Download, Loader2, Save, Trash } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Save, Search, Trash } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { PDFPreview } from "@/components/PDFPreview";
 
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const MONTHS_BN = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR + i);
+const YEARS = Array.from({ length: 8 }, (_, i) => CURRENT_YEAR - 2 + i);
 
 import {
   Tooltip,
@@ -48,6 +48,7 @@ const EditList = () => {
   const [localLoading, setLocalLoading] = useState(true);
   const [listExists, setListExists] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [itemSearchTerm, setItemSearchTerm] = useState("");
 
   const displayMonths = isEnglish ? MONTHS_EN : MONTHS_BN;
 
@@ -71,7 +72,8 @@ const EditList = () => {
       }
     }
     setLocalLoading(false);
-  }, [id, getListById, navigate, isLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isLoading, language]);
 
   const handleUpdateList = async () => {
     if (!id) return;
@@ -83,9 +85,17 @@ const EditList = () => {
       });
       return;
     }
+    if (!selectedMonth || !selectedYear) {
+      toast({
+        title: getText("missingInfo", language),
+        description: isEnglish ? "Please select a month and year." : "অনুগ্রহ করে মাস এবং বছর নির্বাচন করুন।",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
-      await updateList(id, { title, month: selectedMonth, year: parseInt(selectedYear) });
+      await updateList(id, { title, month: selectedMonth, year: parseInt(selectedYear, 10) });
     } catch (error) {
       console.error("Error updating list:", error);
     }
@@ -280,15 +290,52 @@ const EditList = () => {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>{getText("itemsInList", language)}</CardTitle>
-            <CardDescription className="text-center">
-              {isEnglish
-                ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
-                : `${toBengaliNumerals(list?.items.length || 0)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT", true)}`}
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle>{getText("itemsInList", language)}</CardTitle>
+                <CardDescription className="text-left">
+                  {isEnglish
+                    ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
+                    : `${toBengaliNumerals(list?.items.length || 0)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT", true)}`}
+                </CardDescription>
+              </div>
+              {(list?.items.length || 0) > 0 && (
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={getText("searchItems", language)}
+                    value={itemSearchTerm}
+                    onChange={e => setItemSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            {list && <GroceryItemTable listId={id!} items={list.items} />}
+            {list && (
+              <>
+                <GroceryItemTable
+                  listId={id!}
+                  items={
+                    itemSearchTerm.trim()
+                      ? list.items.filter(item =>
+                        item.name.toLowerCase().includes(itemSearchTerm.trim().toLowerCase())
+                      )
+                      : list.items
+                  }
+                  disableDnD={!!itemSearchTerm.trim()}
+                />
+                {itemSearchTerm.trim() && list.items.filter(item =>
+                  item.name.toLowerCase().includes(itemSearchTerm.trim().toLowerCase())
+                ).length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Search className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                      <p>{getText("noItemsMatch", language)}</p>
+                    </div>
+                  )}
+              </>
+            )}
           </CardContent>
         </Card>
       </DashboardLayout>

@@ -94,7 +94,8 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
         const { data: itemsData, error: itemsError } = await supabase
           .from('grocery_items')
           .select('*')
-          .in('list_id', listsData.map(list => list.id));
+          .in('list_id', listsData.map(list => list.id))
+          .order('sort_order', { ascending: true });
 
         if (itemsError) throw itemsError;
 
@@ -172,12 +173,13 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
       // Insert all items
       if (list.items.length > 0) {
-        const itemsToInsert = list.items.map(item => ({
+        const itemsToInsert = list.items.map((item, index) => ({
           list_id: listData.id,
           name: item.name,
           quantity: item.quantity,
           unit: item.unit,
-          estimated_price: item.estimatedPrice
+          estimated_price: item.estimatedPrice,
+          sort_order: index
         }));
 
         const { error: itemsError } = await supabase
@@ -338,12 +340,13 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
       // Duplicate all items
       if (originalList.items.length > 0) {
-        const itemsToInsert = originalList.items.map(item => ({
+        const itemsToInsert = originalList.items.map((item, index) => ({
           list_id: listData.id,
           name: item.name,
           quantity: item.quantity,
           unit: item.unit,
-          estimated_price: item.estimatedPrice
+          estimated_price: item.estimatedPrice,
+          sort_order: index
         }));
 
         const { error: itemsError } = await supabase
@@ -409,7 +412,8 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
           name: item.name,
           quantity: item.quantity,
           unit: item.unit,
-          estimated_price: estimatedPrice
+          estimated_price: estimatedPrice,
+          sort_order: lists.find(l => l.id === listId)?.items.length || 0
         })
         .select()
         .single();
@@ -607,6 +611,18 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
     setLists(updatedLists);
 
+    // Persist sort order to database
+    try {
+      const updates = reorderedItems.map((item, index) =>
+        supabase
+          .from('grocery_items')
+          .update({ sort_order: index })
+          .eq('id', item.id)
+      );
+      await Promise.all(updates);
+    } catch (error) {
+      console.error("Error persisting sort order:", error);
+    }
   };
 
   // Helper function to refetch lists and items
@@ -626,7 +642,8 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
       const { data: itemsData, error: itemsError } = await supabase
         .from('grocery_items')
         .select('*')
-        .in('list_id', listsData.map(list => list.id));
+        .in('list_id', listsData.map(list => list.id))
+        .order('sort_order', { ascending: true });
 
       if (itemsError) throw itemsError;
 

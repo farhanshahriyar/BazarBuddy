@@ -14,13 +14,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Search } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({
-  length: 5
-}, (_, i) => CURRENT_YEAR + i);
+  length: 8
+}, (_, i) => CURRENT_YEAR - 2 + i);
 
 // Bengali month names
 const MONTHS_BN = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
@@ -47,19 +47,20 @@ const CreateList = () => {
   const [selectedMonth, setSelectedMonth] = useState(MONTHS[currentMonth]);
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR.toString());
   const [items, setItems] = useState<GroceryItem[]>([]);
+  const [itemSearchTerm, setItemSearchTerm] = useState("");
   const handleCreateList = async () => {
     if (!title) {
       toast({
-        title: isEnglish ? "Missing Information" : "তথ্য অনুপস্থিত",
-        description: isEnglish ? "Please provide a title for your grocery list." : "অনুগ্রহ করে আপনার মুদি তালিকার জন্য একটি শিরোনাম দিন।",
+        title: getText("missingInfo", language),
+        description: getText("pleaseProvideTitle", language),
         variant: "destructive"
       });
       return;
     }
     if (items.length === 0) {
       toast({
-        title: isEnglish ? "Empty List" : "খালি তালিকা",
-        description: isEnglish ? "Please add at least one item to your grocery list." : "অনুগ্রহ করে আপনার মুদি তালিকায় অন্তত একটি আইটেম যোগ করুন।",
+        title: getText("emptyList", language),
+        description: getText("emptyListDesc", language),
         variant: "destructive"
       });
       return;
@@ -94,10 +95,21 @@ const CreateList = () => {
 
   // Calculate the total price in BDT
   const totalPriceBdt = items.reduce((total, item) => total + (item.estimatedPrice || 0), 0);
+
+  // Filter items based on search term
+  const filteredItems = itemSearchTerm.trim()
+    ? items.filter(item =>
+      item.name.toLowerCase().includes(itemSearchTerm.trim().toLowerCase())
+    )
+    : items;
+
   return (
     <TooltipProvider delayDuration={300}>
       <DashboardLayout>
-        <div className="flex items-center justify-center gap-2 mb-6 text-center">
+        <div className="flex items-center gap-2 mb-6">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{getText("createNewList", language)}</h1>
             <p className="text-muted-foreground">
@@ -139,7 +151,7 @@ const CreateList = () => {
                   </Tooltip>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                     <SelectTrigger id="month">
-                      <SelectValue placeholder={isEnglish ? "Select month" : "মাস নির্বাচন করুন"} />
+                      <SelectValue placeholder={getText("selectMonth", language)} />
                     </SelectTrigger>
                     <SelectContent position="popper">
                       {MONTHS.map((month, index) => <SelectItem key={month} value={month}>
@@ -159,11 +171,11 @@ const CreateList = () => {
                   </Tooltip>
                   <Select value={selectedYear} onValueChange={setSelectedYear}>
                     <SelectTrigger id="year">
-                      <SelectValue placeholder={isEnglish ? "Select year" : "বছর নির্বাচন করুন"} />
+                      <SelectValue placeholder={getText("selectYear", language)} />
                     </SelectTrigger>
                     <SelectContent position="popper">
                       {YEARS.map(year => <SelectItem key={year} value={year.toString()}>
-                        {year}
+                        {isEnglish ? year : toBengaliNumerals(year.toString())}
                       </SelectItem>)}
                     </SelectContent>
                   </Select>
@@ -206,20 +218,47 @@ const CreateList = () => {
         {/* List Preview */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-left">{getText("itemsInList", language)}</CardTitle>
-            <CardDescription className="text-left">
-              {isEnglish ? `${items.length} items • Estimated total: ${formatCurrency(totalPriceBdt, 'BDT')}` : `${toBengaliNumerals(items.length)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPriceBdt, 'BDT', true)}`}
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="text-left">{getText("itemsInList", language)}</CardTitle>
+                <CardDescription className="text-left">
+                  {isEnglish ? `${items.length} items • Estimated total: ${formatCurrency(totalPriceBdt, 'BDT')}` : `${toBengaliNumerals(items.length)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPriceBdt, 'BDT', true)}`}
+                </CardDescription>
+              </div>
+              {items.length > 0 && (
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={getText("searchItems", language)}
+                    value={itemSearchTerm}
+                    onChange={e => setItemSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <GroceryItemTable
               listId={tempListId}
-              items={items}
+              items={filteredItems}
               onDelete={removeItemFromList}
               onUpdate={updateItemInList}
-              onReorder={setItems}
+              onReorder={(reorderedItems) => {
+                if (itemSearchTerm.trim()) {
+                  return;
+                }
+                setItems(reorderedItems);
+              }}
               isCreatePage={true}
+              disableDnD={!!itemSearchTerm.trim()}
             />
+            {itemSearchTerm.trim() && filteredItems.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Search className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                <p>{getText("noItemsMatch", language)}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </DashboardLayout>

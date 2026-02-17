@@ -37,6 +37,7 @@ interface GroceryItemTableProps {
   isCreatePage?: boolean;
   onReorder?: (items: GroceryItem[]) => void;
   onUpdate?: (item: GroceryItem) => void;
+  disableDnD?: boolean;
 }
 
 interface SortableRowProps {
@@ -44,9 +45,10 @@ interface SortableRowProps {
   isEnglish: boolean;
   onEdit: (item: GroceryItem) => void;
   onDelete: (id: string) => void;
+  disableDnD?: boolean;
 }
 
-function SortableRow({ item, isEnglish, onEdit, onDelete }: SortableRowProps) {
+function SortableRow({ item, isEnglish, onEdit, onDelete, disableDnD }: SortableRowProps) {
   const {
     attributes,
     listeners,
@@ -66,15 +68,17 @@ function SortableRow({ item, isEnglish, onEdit, onDelete }: SortableRowProps) {
   return (
     <TableRow ref={setNodeRef} style={style} className="group">
       <TableCell className="w-[50px]">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="cursor-grab active:cursor-grabbing touch-none"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </Button>
+        {!disableDnD && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="cursor-grab active:cursor-grabbing touch-none"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        )}
       </TableCell>
       <TableCell className="font-medium">{item.name}</TableCell>
       <TableCell className="text-center">
@@ -111,7 +115,8 @@ export function GroceryItemTable({
   onDelete,
   isCreatePage = false,
   onReorder,
-  onUpdate
+  onUpdate,
+  disableDnD = false
 }: GroceryItemTableProps) {
   const {
     removeItemFromList,
@@ -153,6 +158,8 @@ export function GroceryItemTable({
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
+    if (disableDnD) return;
+
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -211,6 +218,7 @@ export function GroceryItemTable({
                     isEnglish={isEnglish}
                     onEdit={handleEdit}
                     onDelete={(id) => setItemToDelete(id)}
+                    disableDnD={disableDnD}
                   />
                 ))}
               </SortableContext>

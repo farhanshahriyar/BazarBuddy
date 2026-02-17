@@ -17,6 +17,7 @@ export type Database = {
           list_id: string | null
           name: string
           quantity: number
+          sort_order: number
           unit: string
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           list_id?: string | null
           name: string
           quantity: number
+          sort_order?: number
           unit: string
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           list_id?: string | null
           name?: string
           quantity?: number
+          sort_order?: number
           unit?: string
         }
         Relationships: [
