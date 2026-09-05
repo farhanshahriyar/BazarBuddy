@@ -14,7 +14,6 @@ import { BarChart, Clock, DollarSign, Loader2, Plus, ShoppingCart } from "lucide
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getText } from "@/utils/translations";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PDFPreview } from "@/components/PDFPreview";
 import { TotalSpentPieChart } from "@/components/TotalSpentPieChart";
 
 const Dashboard = () => {
@@ -23,8 +22,6 @@ const Dashboard = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [chartData, setChartData] = useState<any[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [selectedList, setSelectedList] = useState<{ id: string, name: string } | null>(null);
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
 
@@ -142,11 +139,6 @@ const Dashboard = () => {
   const totalItems = lists.reduce((count, list) => count + list.items.length, 0);
   const totalSpentBdt = lists.reduce((total, list) => total + list.totalEstimatedPrice, 0);
   const avgSpentPerListBdt = totalLists > 0 ? totalSpentBdt / totalLists : 0;
-
-  const handleListClick = (listId: string, listTitle: string) => {
-    setSelectedList({ id: listId, name: listTitle });
-    setPreviewOpen(true);
-  };
 
   if (isLoading) {
     return (
@@ -276,7 +268,7 @@ const Dashboard = () => {
                           <TableRow
                             key={list.id}
                             className="cursor-pointer hover:bg-muted/50"
-                            onClick={() => handleListClick(list.id, list.title)}
+                            onClick={() => navigate(`/edit-list/${list.id}`)}
                           >
                             <TableCell className={`font-medium text-center ${isMobile ? "py-2 px-3" : ""}`}>
                               {list.title}
@@ -298,14 +290,6 @@ const Dashboard = () => {
         </div>
 
       </div>
-
-      {/* PDF Preview Dialog */}
-      {/* <PDFPreview
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        listId={selectedList?.id || null}
-        listName={selectedList?.name || ""}
-      /> */}
     </DashboardLayout>
   );
 };

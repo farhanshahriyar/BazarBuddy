@@ -18,12 +18,12 @@ const Register = () => {
     register
   } = useAuth();
   const navigate = useNavigate();
-  const validatePasswords = () => {
-    if (password !== confirmPassword) {
+  const validatePasswords = (pwd: string = password, confirm: string = confirmPassword) => {
+    if (pwd !== confirm) {
       setPasswordError("Passwords do not match");
       return false;
     }
-    if (password.length < 6) {
+    if (pwd.length < 6) {
       setPasswordError("Password must be at least 6 characters");
       return false;
     }
@@ -39,7 +39,7 @@ const Register = () => {
     try {
       const success = await register(name, email, password);
       if (success) {
-        navigate("/dashboard");
+        navigate("/login");
       }
     } finally {
       setIsSubmitting(false);
@@ -73,8 +73,9 @@ const Register = () => {
             <Label htmlFor="password" className="text-left block">Password</Label>
             <div className="relative">
               <Input id="password" required type={showPassword ? "text" : "password"} placeholder="******" value={password} onChange={e => {
-                setPassword(e.target.value);
-                if (confirmPassword) validatePasswords();
+                const newPwd = e.target.value;
+                setPassword(newPwd);
+                if (confirmPassword) validatePasswords(newPwd, confirmPassword);
               }} className="pr-10" />
               <button
                 type="button"
@@ -89,8 +90,9 @@ const Register = () => {
             <Label htmlFor="confirm-password" className="text-left block">Confirm Password</Label>
             <div className="relative">
               <Input id="confirm-password" required type={showConfirmPassword ? "text" : "password"} placeholder="******" value={confirmPassword} onChange={e => {
-                setConfirmPassword(e.target.value);
-                if (password) validatePasswords();
+                const newConfirm = e.target.value;
+                setConfirmPassword(newConfirm);
+                if (password) validatePasswords(password, newConfirm);
               }} className="pr-10" />
               <button
                 type="button"

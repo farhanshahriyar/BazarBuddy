@@ -32,12 +32,12 @@ const ResetPassword = () => {
     checkSession();
   }, [navigate]);
 
-  const validatePasswords = () => {
-    if (password !== confirmPassword) {
+  const validatePasswords = (pwd: string = password, confirm: string = confirmPassword) => {
+    if (pwd !== confirm) {
       setPasswordError("Passwords do not match");
       return false;
     }
-    if (password.length < 6) {
+    if (pwd.length < 6) {
       setPasswordError("Password must be at least 6 characters");
       return false;
     }
@@ -107,8 +107,9 @@ const ResetPassword = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (confirmPassword) validatePasswords();
+                  const newPwd = e.target.value;
+                  setPassword(newPwd);
+                  if (confirmPassword) validatePasswords(newPwd, confirmPassword);
                 }}
               />
             </div>
@@ -121,8 +122,9 @@ const ResetPassword = () => {
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  if (password) validatePasswords();
+                  const newConfirm = e.target.value;
+                  setConfirmPassword(newConfirm);
+                  if (password) validatePasswords(password, newConfirm);
                 }}
               />
               {passwordError && (

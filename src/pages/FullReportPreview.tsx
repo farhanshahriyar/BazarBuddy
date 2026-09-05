@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGrocery } from "@/contexts/GroceryContext";
 import { formatCurrency } from "@/utils/currency";
-import { getText } from "@/utils/translations";
+import { getText, formatUnit } from "@/utils/translations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,9 @@ const FullReportPreview = () => {
             margin: 0.4,
             filename: `BazarBuddy_Full_Report_${new Date().toISOString().split('T')[0]}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'], avoid: ['tr', '.avoid-break'] }
         };
 
         try {
@@ -75,6 +75,21 @@ const FullReportPreview = () => {
 
             <style>
                 {`
+          .avoid-break, table tr, table th, table td {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          table {
+            page-break-inside: auto;
+          }
+          thead {
+            display: table-header-group;
+          }
+          tfoot {
+            display: table-footer-group;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
           @media print {
             body {
               font-family: 'Noto Sans Bengali', Arial, sans-serif;
@@ -171,6 +186,9 @@ const FullReportPreview = () => {
                             <Table className="w-full min-w-[500px] sm:min-w-full">
                                 <TableHeader>
                                     <TableRow className="bg-orange-600 hover:bg-orange-600">
+                                        <TableHead className="text-white text-center font-bold border-r border-orange-500/30 w-12">
+                                            {isEnglish ? "SL" : "ক্র. নং"}
+                                        </TableHead>
                                         <TableHead className="text-white text-left font-bold border-r border-orange-500/30">
                                             {isEnglish ? "Item" : "আইটেম"}
                                         </TableHead>
@@ -186,22 +204,25 @@ const FullReportPreview = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {list.items.map((item: any) => (
-                                        <TableRow key={item.id} className="hover:bg-gray-50/50">
+                                    {list.items.map((item: any, itemIndex: number) => (
+                                        <TableRow key={item.id} className="hover:bg-gray-50/50 avoid-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                                            <TableCell className="border-r border-gray-100 text-center font-medium text-gray-600">
+                                                {isEnglish ? itemIndex + 1 : toBengaliNumerals(itemIndex + 1)}
+                                            </TableCell>
                                             <TableCell className="border-r border-gray-100 font-medium text-gray-900">{item.name}</TableCell>
                                             <TableCell className="border-r border-gray-100 text-center text-gray-600 font-medium">
                                                 {isEnglish ? item.quantity : toBengaliNumerals(item.quantity)}
                                             </TableCell>
-                                            <TableCell className="border-r border-gray-100 text-center text-gray-500 text-xs sm:text-sm">{item.unit}</TableCell>
+                                            <TableCell className="border-r border-gray-100 text-center text-gray-500 text-xs sm:text-sm">{formatUnit(item.unit, language)}</TableCell>
                                             <TableCell className="text-right text-gray-900 font-bold">
-                                                {formatCurrency(item.estimatedPrice || 0, 'BDT')}
+                                                {item.estimatedPrice && Number(item.estimatedPrice) > 0 ? formatCurrency(item.estimatedPrice, 'BDT') : ""}
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
                                 <TableFooter>
-                                    <TableRow className="bg-orange-50/50 font-black border-t-2 border-orange-100">
-                                        <TableCell colSpan={3} className="text-right border-r border-orange-100 text-gray-700 uppercase tracking-widest text-[10px] sm:text-xs">
+                                    <TableRow className="bg-orange-50/50 font-black border-t-2 border-orange-100 avoid-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                                        <TableCell colSpan={4} className="text-right border-r border-orange-100 text-gray-700 uppercase tracking-widest text-[10px] sm:text-xs">
                                             {isEnglish ? "Total Amount:" : "মোট পরিমাণ:"}
                                         </TableCell>
                                         <TableCell className="text-right text-orange-600 text-base">

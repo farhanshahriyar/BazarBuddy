@@ -28,7 +28,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "@/components/ui/use-toast";
 import { getText } from "@/utils/translations";
 
 interface SidebarProps {
@@ -45,13 +44,9 @@ export function Sidebar({ className }: SidebarProps) {
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const userInitial = userName.charAt(0).toUpperCase();
 
-  const onLogout = () => {
-    logout();
+  const onLogout = async () => {
+    await logout();
     navigate("/login");
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
-    });
   };
 
   const sidebarLinks = [

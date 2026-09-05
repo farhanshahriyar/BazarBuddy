@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ export function PDFPreview({ open, onOpenChange, listId, listName }: PDFPreviewP
   const [printUrl, setPrintUrl] = useState("");
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const { language } = useLanguage();
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export function PDFPreview({ open, onOpenChange, listId, listName }: PDFPreviewP
           }
         };
       } else {
-        const iframe = document.getElementById("preview-iframe") as HTMLIFrameElement;
+        const iframe = iframeRef.current;
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.print();
           toast({
@@ -83,27 +84,8 @@ export function PDFPreview({ open, onOpenChange, listId, listName }: PDFPreviewP
   };
 
   const handleIframeLoad = () => {
-    setTimeout(() => {
-      try {
-        const iframe = document.getElementById("preview-iframe") as HTMLIFrameElement;
-        if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
-          const bodyContent = iframe.contentDocument.body.innerHTML;
-          if (bodyContent.length < 50 || bodyContent.includes("Error") || bodyContent.includes("404")) {
-            setHasError(true);
-            console.error("Preview content appears to be empty or has an error");
-          } else {
-            setHasError(false);
-          }
-        } else {
-          setHasError(true);
-        }
-      } catch (e) {
-        console.error("Error checking iframe:", e);
-        setHasError(true);
-      } finally {
-        setLoading(false);
-      }
-    }, 1000);
+    setLoading(false);
+    setHasError(false);
   };
 
   const handleRetry = () => {
@@ -130,8 +112,12 @@ export function PDFPreview({ open, onOpenChange, listId, listName }: PDFPreviewP
           )}
 
           <iframe
-            id="preview-iframe"
+            ref={iframeRef}
             onLoad={handleIframeLoad}
+            onError={() => {
+              setLoading(false);
+              setHasError(true);
+            }}
             className="w-full h-full min-h-[600px] border-none bg-white"
             src={printUrl}
             title={`Preview of ${listName}`}

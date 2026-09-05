@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GroceryItemForm } from "./GroceryItemForm";
-import { Edit, GripVertical, MoreHorizontal, Trash } from "lucide-react";
+import { Edit, GripVertical, MoreHorizontal, Search, Trash } from "lucide-react";
+import { getText, formatUnit } from "@/utils/translations";
 import {
   DndContext,
   closestCenter,
@@ -38,6 +39,9 @@ interface GroceryItemTableProps {
   onReorder?: (items: GroceryItem[]) => void;
   onUpdate?: (item: GroceryItem) => void;
   disableDnD?: boolean;
+  isSearching?: boolean;
+  searchTerm?: string;
+  onClearSearch?: () => void;
 }
 
 interface SortableRowProps {
@@ -82,10 +86,10 @@ function SortableRow({ item, isEnglish, onEdit, onDelete, disableDnD }: Sortable
       </TableCell>
       <TableCell className="font-medium">{item.name}</TableCell>
       <TableCell className="text-center">
-        {isEnglish ? item.quantity : toBengaliNumerals(item.quantity)} {item.unit}
+        {isEnglish ? item.quantity : toBengaliNumerals(item.quantity)} {formatUnit(item.unit, isEnglish ? "en" : "bn")}
       </TableCell>
       <TableCell className="text-right">
-        {item.estimatedPrice !== null ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : "N/A"}
+        {item.estimatedPrice != null ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : "N/A"}
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -116,7 +120,10 @@ export function GroceryItemTable({
   isCreatePage = false,
   onReorder,
   onUpdate,
-  disableDnD = false
+  disableDnD = false,
+  isSearching = false,
+  searchTerm = "",
+  onClearSearch
 }: GroceryItemTableProps) {
   const {
     removeItemFromList,
@@ -202,8 +209,33 @@ export function GroceryItemTable({
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  {isEnglish ? "No items added to this list yet." : "এই তালিকায় এখনও কোন আইটেম যোগ করা হয়নি।"}
+                <TableCell colSpan={5} className="h-32 text-center py-6">
+                  {isSearching ? (
+                    <div className="flex flex-col items-center justify-center space-y-2 text-muted-foreground">
+                      <Search className="h-8 w-8 opacity-40 mb-1" />
+                      <p className="text-sm font-medium">
+                        {isEnglish
+                          ? searchTerm
+                            ? `No items found matching "${searchTerm}"`
+                            : "No items match your search."
+                          : searchTerm
+                            ? `"${searchTerm}" এর সাথে কোনো আইটেম মেলেনি`
+                            : "আপনার অনুসন্ধানের সাথে কোনো আইটেম মেলেনি।"}
+                      </p>
+                      {onClearSearch && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={onClearSearch}
+                          className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30 text-xs font-medium mt-1"
+                        >
+                          {getText("clearSearch", language)}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <span>{isEnglish ? "No items added to this list yet." : "এই তালিকায় এখনও কোন আইটেম যোগ করা হয়নি।"}</span>
+                  )}
                 </TableCell>
               </TableRow>
             ) : (

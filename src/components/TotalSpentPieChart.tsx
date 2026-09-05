@@ -36,6 +36,8 @@ export const TotalSpentPieChart: React.FC<TotalSpentPieChartProps> = ({
     { name: getText("avgListCost", language), value: avgListCost }
   ];
 
+  const isEnglish = language === "en";
+
   return (
     <Card className="card-gradient">
       <CardHeader>
@@ -43,27 +45,33 @@ export const TotalSpentPieChart: React.FC<TotalSpentPieChartProps> = ({
         <CardDescription>{getText("totalVsAverageCost", language)}</CardDescription>
       </CardHeader>
       <CardContent className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              label={({ name, value }) => `${name}: ${formatCurrency(value, "BDT")}`}
-              labelLine={false}
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value: number) => formatCurrency(value, "BDT")} />
-            <Legend verticalAlign="bottom" height={36} />
-          </PieChart>
-        </ResponsiveContainer>
+        {totalSpent === 0 && avgListCost === 0 ? (
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            {isEnglish ? "No spending data available yet" : "এখনও কোনো খরচের ডেটা নেই"}
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                label={({ name, value }) => `${name}: ${formatCurrency(value, "BDT")}`}
+                labelLine={false}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: number) => formatCurrency(value, "BDT")} />
+              <Legend verticalAlign="bottom" height={36} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

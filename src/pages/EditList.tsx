@@ -6,7 +6,7 @@ import { useGrocery } from "@/contexts/GroceryContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/utils/currency";
-import { getText } from "@/utils/translations";
+import { getText, formatUnit } from "@/utils/translations";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { GroceryItemForm } from "@/components/GroceryItemForm";
 import { GroceryItemTable } from "@/components/GroceryItemTable";
@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Download, Loader2, Save, Search, Trash } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Save, Search, Trash, X } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { PDFPreview } from "@/components/PDFPreview";
 
@@ -31,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toBengaliNumerals } from "@/utils/numbers";
+import { toBengaliNumerals, toArabicNumerals } from "@/utils/numbers";
 
 const EditList = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,23 +45,27 @@ const EditList = () => {
   const [title, setTitle] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
-  const [localLoading, setLocalLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [listExists, setListExists] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [itemSearchTerm, setItemSearchTerm] = useState("");
 
   const displayMonths = isEnglish ? MONTHS_EN : MONTHS_BN;
 
   useEffect(() => {
-    if (isLoading) return;
+    if (authLoading || groceryLoading) return;
 
     if (id) {
       const list = getListById(id);
       if (list) {
-        setTitle(list.title || "");
-        setSelectedMonth(list.month || "");
-        setSelectedYear(list.year?.toString() || "");
-        setListExists(true);
+        if (!listExists) {
+          setTitle(list.title || "");
+          setSelectedMonth(list.month || "");
+          setSelectedYear(list.year?.toString() || "");
+          setListExists(true);
+        }
+        setInitialLoading(false);
       } else {
         toast({
           title: getText("listNotFound", language),
@@ -71,9 +75,7 @@ const EditList = () => {
         navigate("/dashboard");
       }
     }
-    setLocalLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isLoading, language]);
+  }, [id, authLoading, groceryLoading, listExists, language, getListById, navigate]);
 
   const handleUpdateList = async () => {
     if (!id) return;
@@ -94,10 +96,13 @@ const EditList = () => {
       return;
     }
 
+    setIsUpdating(true);
     try {
       await updateList(id, { title, month: selectedMonth, year: parseInt(selectedYear, 10) });
     } catch (error) {
       console.error("Error updating list:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -128,7 +133,7 @@ const EditList = () => {
     }
   };
 
-  if (localLoading || isLoading) {
+  if (initialLoading || (!listExists && (groceryLoading || authLoading))) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-[50vh]">
@@ -142,6 +147,38 @@ const EditList = () => {
 
   const list = getListById(id!);
   const totalPrice = list ? list.totalEstimatedPrice : 0;
+
+  const normalizedSearch = itemSearchTerm.trim().toLowerCase();
+  const arabicSearch = toArabicNumerals(normalizedSearch);
+
+  const filteredItems = (list?.items || []).filter(item => {
+    if (!normalizedSearch) return true;
+
+    // Check item name
+    if (item.name.toLowerCase().includes(normalizedSearch)) return true;
+
+    // Check unit
+    if (item.unit && (item.unit.toLowerCase().includes(normalizedSearch) || formatUnit(item.unit, "bn").toLowerCase().includes(normalizedSearch))) return true;
+
+    // Check quantity in Arabic and Bengali numerals
+    const qtyStr = item.quantity.toString();
+    const qtyBn = toBengaliNumerals(item.quantity);
+    if (qtyStr.includes(arabicSearch) || qtyBn.includes(normalizedSearch)) return true;
+
+    // Check estimated price in Arabic and Bengali numerals
+    if (item.estimatedPrice != null) {
+      const priceStr = item.estimatedPrice.toString();
+      const priceBn = toBengaliNumerals(priceStr);
+      if (priceStr.includes(arabicSearch) || priceBn.includes(normalizedSearch)) return true;
+    }
+
+    return false;
+  });
+
+  const filteredTotalPrice = filteredItems.reduce(
+    (total, item) => total + (item.estimatedPrice || 0),
+    0
+  );
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -256,8 +293,8 @@ const EditList = () => {
             <CardFooter>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={handleUpdateList} disabled={isLoading} className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50">
-                    {isLoading ? (
+                  <Button onClick={handleUpdateList} disabled={isUpdating || groceryLoading} className="w-full bg-orange-600 hover:bg-orange-500 text-gray-50">
+                    {isUpdating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {getText("saving", language)}
@@ -292,49 +329,56 @@ const EditList = () => {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle>{getText("itemsInList", language)}</CardTitle>
+                <CardTitle className="text-left">{getText("itemsInList", language)}</CardTitle>
                 <CardDescription className="text-left">
-                  {isEnglish
-                    ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
-                    : `${toBengaliNumerals(list?.items.length || 0)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT", true)}`}
+                  {normalizedSearch ? (
+                    isEnglish
+                      ? `${filteredItems.length} of ${list?.items.length || 0} items found • Filtered total: ${formatCurrency(filteredTotalPrice, "BDT")}`
+                      : `${toBengaliNumerals(list?.items.length || 0)} টির মধ্যে ${toBengaliNumerals(filteredItems.length)} টি আইটেম পাওয়া গেছে • ফিল্টার করা মোট: ${formatCurrency(filteredTotalPrice, "BDT", true)}`
+                  ) : (
+                    isEnglish
+                      ? `${list?.items.length || 0} items • Estimated total: ${formatCurrency(totalPrice, "BDT")}`
+                      : `${toBengaliNumerals(list?.items.length || 0)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPrice, "BDT", true)}`
+                  )}
                 </CardDescription>
               </div>
-              {(list?.items.length || 0) > 0 && (
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              {((list?.items.length || 0) > 0 || itemSearchTerm) && (
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   <Input
+                    type="text"
                     placeholder={getText("searchItems", language)}
                     value={itemSearchTerm}
                     onChange={e => setItemSearchTerm(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 pr-8 h-9 text-sm"
                   />
+                  {itemSearchTerm && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setItemSearchTerm("")}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                      title={getText("clearSearch", language)}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      <span className="sr-only">{getText("clearSearch", language)}</span>
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
           </CardHeader>
           <CardContent>
             {list && (
-              <>
-                <GroceryItemTable
-                  listId={id!}
-                  items={
-                    itemSearchTerm.trim()
-                      ? list.items.filter(item =>
-                        item.name.toLowerCase().includes(itemSearchTerm.trim().toLowerCase())
-                      )
-                      : list.items
-                  }
-                  disableDnD={!!itemSearchTerm.trim()}
-                />
-                {itemSearchTerm.trim() && list.items.filter(item =>
-                  item.name.toLowerCase().includes(itemSearchTerm.trim().toLowerCase())
-                ).length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Search className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                      <p>{getText("noItemsMatch", language)}</p>
-                    </div>
-                  )}
-              </>
+              <GroceryItemTable
+                listId={id!}
+                items={filteredItems}
+                disableDnD={!!normalizedSearch}
+                isSearching={!!normalizedSearch}
+                searchTerm={itemSearchTerm.trim()}
+                onClearSearch={() => setItemSearchTerm("")}
+              />
             )}
           </CardContent>
         </Card>

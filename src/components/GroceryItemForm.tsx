@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getText } from "@/utils/translations";
+import { getText, formatUnit } from "@/utils/translations";
 
 interface GroceryItemFormProps {
   listId: string;
@@ -25,7 +25,6 @@ interface GroceryItemFormProps {
   isCreatePage?: boolean;
 }
 const UNITS = ["kg", "g", "lb", "pcs", "l", "ml", "dozen"];
-const UNITS_BN = ["কেজি", "গ্রাম", "পাউন্ড", "পিস", "লিটার", "মিলিলিটার", "ডজন"];
 export function GroceryItemForm({
   listId,
   item,
@@ -157,7 +156,7 @@ export function GroceryItemForm({
       setEstimatedPrice(priceBdt.toFixed(2));
 
       // Format the toast message according to the specified examples 
-      const toastDescription = isEnglish ? `Estimated price for ${quantity} ${unit} of "${name}" in Bangladeshi Taka: ${priceBdt}` : `${toBengaliNumerals(quantity)} ${unit} "${name}" এর অনুমানিত মূল্য বাংলাদেশি টাকায়: ${toBengaliNumerals(priceBdt.toFixed(2))}`;
+      const toastDescription = isEnglish ? `Estimated price for ${quantity} ${unit} of "${name}" in Bangladeshi Taka: ${priceBdt}` : `${toBengaliNumerals(quantity)} ${formatUnit(unit, "bn")} "${name}" এর অনুমানিত মূল্য বাংলাদেশি টাকায়: ${toBengaliNumerals(priceBdt.toFixed(2))}`;
       toast({
         title: isEnglish ? "Price Generated" : "মূল্য তৈরি হয়েছে",
         description: toastDescription
@@ -227,9 +226,9 @@ export function GroceryItemForm({
                 <SelectValue placeholder={isEnglish ? "Select unit" : "একক নির্বাচন করুন"} />
               </SelectTrigger>
               <SelectContent position="popper">
-                {UNITS.map((u, index) => (
+                {UNITS.map((u) => (
                   <SelectItem key={u} value={u}>
-                    {isEnglish ? u : UNITS_BN[index]}
+                    {formatUnit(u, language)}
                   </SelectItem>
                 ))}
               </SelectContent>

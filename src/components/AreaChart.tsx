@@ -58,7 +58,7 @@ export function AreaChart({
             <XAxis dataKey="name" tickLine={false} axisLine={false} />
           )}
           <YAxis tickLine={false} axisLine={false} />
-          {showTooltip && <Tooltip formatter={(value: number) => `৳ ${value.toFixed(2)}`} />}
+          {showTooltip && <Tooltip formatter={(value: number) => `৳ ${(Number(value) || 0).toFixed(2)}`} />}
           <Legend verticalAlign="top" height={36} />
           <Area
             type="monotone"

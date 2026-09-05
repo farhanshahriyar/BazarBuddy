@@ -256,6 +256,13 @@ type TranslationKey =
   | "confirmDelete"
   | "quantity"
   | "unit"
+  | "kg"
+  | "g"
+  | "lb"
+  | "pcs"
+  | "l"
+  | "ml"
+  | "dozen"
   | "estPriceBdt"
   | "total"
   | "generatedBy"
@@ -319,7 +326,8 @@ type TranslationKey =
   | "pdfError"
   | "pdfFallback"
   | "searchItems"
-  | "noItemsMatch";
+  | "noItemsMatch"
+  | "serialNo";
 
 
 
@@ -669,6 +677,34 @@ export const translations: Translations = {
     en: "Unit",
     bn: "একক"
   },
+  kg: {
+    en: "kg",
+    bn: "কেজি"
+  },
+  g: {
+    en: "g",
+    bn: "গ্রাম"
+  },
+  lb: {
+    en: "lb",
+    bn: "পাউন্ড"
+  },
+  pcs: {
+    en: "pcs",
+    bn: "পিস"
+  },
+  l: {
+    en: "l",
+    bn: "লিটার"
+  },
+  ml: {
+    en: "ml",
+    bn: "মিলিলিটার"
+  },
+  dozen: {
+    en: "dozen",
+    bn: "ডজন"
+  },
   estPriceBdt: {
     en: "Est. Price (৳)",
     bn: "অনু. মূল্য (৳)"
@@ -929,6 +965,10 @@ export const translations: Translations = {
     en: "No items match your search.",
     bn: "আপনার অনুসন্ধানের সাথে কোনো আইটেম মেলেনি।",
   },
+  serialNo: {
+    en: "SL",
+    bn: "ক্র. নং",
+  },
 };
 
 // export const getText = (key: TranslationKey, language: "en" | "bn"): string => {
@@ -945,5 +985,45 @@ export const getText = (key: string, language: "en" | "bn"): string => {
 
   return entry[language] || entry["en"] || key;
 };
+
+const UNIT_ALIASES: Record<string, TranslationKey> = {
+  kg: "kg",
+  kilogram: "kg",
+  kilograms: "kg",
+  g: "g",
+  gm: "g",
+  gram: "g",
+  grams: "g",
+  lb: "lb",
+  lbs: "lb",
+  pound: "lb",
+  pounds: "lb",
+  pcs: "pcs",
+  pc: "pcs",
+  piece: "pcs",
+  pieces: "pcs",
+  l: "l",
+  liter: "l",
+  liters: "l",
+  litre: "l",
+  litres: "l",
+  ml: "ml",
+  milliliter: "ml",
+  milliliters: "ml",
+  dozen: "dozen",
+  dozens: "dozen",
+};
+
+export const formatUnit = (unit: string | undefined | null, language: "en" | "bn" = "en"): string => {
+  if (!unit) return "";
+  const cleaned = unit.trim().toLowerCase();
+  const canonicalKey = UNIT_ALIASES[cleaned] || (cleaned as TranslationKey);
+  const entry = translations[canonicalKey];
+  if (entry) {
+    return entry[language] || entry["en"] || unit;
+  }
+  return unit;
+};
+
 
 

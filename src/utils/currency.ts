@@ -9,8 +9,9 @@ export const convertUsdToBdt = (amountUsd: number): number => {
 
 import { toBengaliNumerals } from "./numbers";
 
-export const formatCurrency = (amount: number, currency: 'USD' | 'BDT' = 'USD', useBengali: boolean = false): string => {
-  const formatted = amount.toFixed(2);
+export const formatCurrency = (amount: number | null | undefined, currency: 'USD' | 'BDT' = 'BDT', useBengali: boolean = false): string => {
+  const numericAmount = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
+  const formatted = numericAmount.toFixed(2);
   const displayValue = useBengali ? toBengaliNumerals(formatted) : formatted;
 
   if (currency === 'BDT') {

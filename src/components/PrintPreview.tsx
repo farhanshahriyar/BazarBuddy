@@ -147,7 +147,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useGrocery } from "@/contexts/GroceryContext";
 import { formatCurrency } from "@/utils/currency";
-import { getText } from "@/utils/translations";
+import { getText, formatUnit } from "@/utils/translations";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -176,11 +176,15 @@ const PrintPreview = () => {
     if (!printRef.current) return;
 
     const opt = {
-      margin: 0.5,
+      margin: 0.4,
       filename: `${list?.title || "grocery-list"}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak: {
+        mode: ['avoid-all', 'css', 'legacy'],
+        avoid: ['tr', '.avoid-break']
+      }
     };
 
     html2pdf().set(opt).from(printRef.current).save();
@@ -194,6 +198,21 @@ const PrintPreview = () => {
     <div className="p-6 max-w-5xl mx-auto bg-gray-50">
       <style>
         {`
+          .print-table {
+            page-break-inside: auto;
+          }
+          .print-table tr, .print-table th, .print-table td, .avoid-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .print-table thead {
+            display: table-header-group;
+          }
+          .print-table tfoot {
+            display: table-footer-group;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
           @media print {
             body {
               font-family: 'Noto Sans Bengali', Arial, sans-serif;
@@ -244,7 +263,8 @@ const PrintPreview = () => {
 
         <Table className="w-full print-table text-sm" style={{ fontFamily: "'Noto Sans Bengali', Arial, sans-serif" }}>
           <TableHeader>
-            <TableRow className="bg-orange-600 text-white text-sm">
+            <TableRow className="bg-orange-600 text-white text-sm avoid-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+              <TableHead className="text-white text-center py-2 px-2 w-12">{getText("serialNo", language)}</TableHead>
               <TableHead className="text-white text-left py-2 px-3">{getText("item", language)}</TableHead>
               <TableHead className="text-white text-center py-2 px-3">{getText("quantity", language)}</TableHead>
               <TableHead className="text-white text-center py-2 px-3">{getText("unit", language)}</TableHead>
@@ -253,23 +273,26 @@ const PrintPreview = () => {
           </TableHeader>
 
           <TableBody>
-            {list.items.map((item: any) => (
-              <TableRow key={item.id}>
+            {list.items.map((item: any, index: number) => (
+              <TableRow key={item.id} className="avoid-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-2 text-center hover:bg-gray-400 font-medium">
+                  {isEnglish ? index + 1 : toBengaliNumerals(index + 1)}
+                </TableCell>
                 <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 hover:bg-gray-400">{item.name}</TableCell>
                 <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 text-center hover:bg-gray-400">{isEnglish ? item.quantity : toBengaliNumerals(item.quantity)}</TableCell>
-                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 text-center hover:bg-gray-400">{isEnglish ? item.unit : getText(item.unit, language)}</TableCell>
+                <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 text-center hover:bg-gray-400">{formatUnit(item.unit, language)}</TableCell>
                 <TableCell className="border text-gray-950 border-gray-200 py-1.5 px-3 hover:bg-gray-400 text-right price-column">
-                  {item.estimatedPrice ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : (isEnglish ? '$0.00' : '৳০.০০')}
+                  {item.estimatedPrice && Number(item.estimatedPrice) > 0 ? formatCurrency(item.estimatedPrice, 'BDT', !isEnglish) : ""}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
 
           <TableFooter>
-            <TableRow className="bg-gray-100 font-semibold">
-              <TableCell colSpan={3} className=" text-gray-950 hover:bg-gray-400 text-right border border-gray-200">{getText("total", language)}:</TableCell>
+            <TableRow className="bg-gray-100 font-semibold avoid-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+              <TableCell colSpan={4} className=" text-gray-950 hover:bg-gray-400 text-right border border-gray-200">{getText("total", language)}:</TableCell>
               <TableCell className=" text-gray-950 text-right border hover:bg-gray-400 border-gray-200 price-column">
-                {formatCurrency(list.totalEstimatedPrice, 'BDT', !isEnglish)}
+                {list.totalEstimatedPrice && Number(list.totalEstimatedPrice) > 0 ? formatCurrency(list.totalEstimatedPrice, 'BDT', !isEnglish) : ""}
               </TableCell>
             </TableRow>
           </TableFooter>

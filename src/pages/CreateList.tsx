@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useGrocery, GroceryItem } from "@/contexts/GroceryContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatCurrency } from "@/utils/currency";
-import { getText } from "@/utils/translations";
-import { toBengaliNumerals } from "@/utils/numbers";
+import { getText, formatUnit } from "@/utils/translations";
 
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { GroceryItemForm } from "@/components/GroceryItemForm";
@@ -14,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Save, Search } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Search, X } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const CURRENT_YEAR = new Date().getFullYear();
@@ -30,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toBengaliNumerals, toArabicNumerals } from "@/utils/numbers";
 
 const CreateList = () => {
   const navigate = useNavigate();
@@ -97,11 +97,37 @@ const CreateList = () => {
   const totalPriceBdt = items.reduce((total, item) => total + (item.estimatedPrice || 0), 0);
 
   // Filter items based on search term
-  const filteredItems = itemSearchTerm.trim()
-    ? items.filter(item =>
-      item.name.toLowerCase().includes(itemSearchTerm.trim().toLowerCase())
-    )
-    : items;
+  const normalizedSearch = itemSearchTerm.trim().toLowerCase();
+  const arabicSearch = toArabicNumerals(normalizedSearch);
+
+  const filteredItems = items.filter(item => {
+    if (!normalizedSearch) return true;
+
+    // Check item name
+    if (item.name.toLowerCase().includes(normalizedSearch)) return true;
+
+    // Check unit
+    if (item.unit && (item.unit.toLowerCase().includes(normalizedSearch) || formatUnit(item.unit, "bn").toLowerCase().includes(normalizedSearch))) return true;
+
+    // Check quantity in Arabic and Bengali numerals
+    const qtyStr = item.quantity.toString();
+    const qtyBn = toBengaliNumerals(item.quantity);
+    if (qtyStr.includes(arabicSearch) || qtyBn.includes(normalizedSearch)) return true;
+
+    // Check estimated price in Arabic and Bengali numerals
+    if (item.estimatedPrice != null) {
+      const priceStr = item.estimatedPrice.toString();
+      const priceBn = toBengaliNumerals(priceStr);
+      if (priceStr.includes(arabicSearch) || priceBn.includes(normalizedSearch)) return true;
+    }
+
+    return false;
+  });
+
+  const filteredTotalPriceBdt = filteredItems.reduce(
+    (total, item) => total + (item.estimatedPrice || 0),
+    0
+  );
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -222,18 +248,40 @@ const CreateList = () => {
               <div>
                 <CardTitle className="text-left">{getText("itemsInList", language)}</CardTitle>
                 <CardDescription className="text-left">
-                  {isEnglish ? `${items.length} items • Estimated total: ${formatCurrency(totalPriceBdt, 'BDT')}` : `${toBengaliNumerals(items.length)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPriceBdt, 'BDT', true)}`}
+                  {normalizedSearch ? (
+                    isEnglish
+                      ? `${filteredItems.length} of ${items.length} items found • Filtered total: ${formatCurrency(filteredTotalPriceBdt, 'BDT')}`
+                      : `${toBengaliNumerals(items.length)} টির মধ্যে ${toBengaliNumerals(filteredItems.length)} টি আইটেম পাওয়া গেছে • ফিল্টার করা মোট: ${formatCurrency(filteredTotalPriceBdt, 'BDT', true)}`
+                  ) : (
+                    isEnglish
+                      ? `${items.length} items • Estimated total: ${formatCurrency(totalPriceBdt, 'BDT')}`
+                      : `${toBengaliNumerals(items.length)} আইটেম • অনুমানিত মোট: ${formatCurrency(totalPriceBdt, 'BDT', true)}`
+                  )}
                 </CardDescription>
               </div>
-              {items.length > 0 && (
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              {(items.length > 0 || itemSearchTerm) && (
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   <Input
+                    type="text"
                     placeholder={getText("searchItems", language)}
                     value={itemSearchTerm}
                     onChange={e => setItemSearchTerm(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 pr-8 h-9 text-sm"
                   />
+                  {itemSearchTerm && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setItemSearchTerm("")}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                      title={getText("clearSearch", language)}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      <span className="sr-only">{getText("clearSearch", language)}</span>
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -251,14 +299,11 @@ const CreateList = () => {
                 setItems(reorderedItems);
               }}
               isCreatePage={true}
-              disableDnD={!!itemSearchTerm.trim()}
+              disableDnD={!!normalizedSearch}
+              isSearching={!!normalizedSearch}
+              searchTerm={itemSearchTerm.trim()}
+              onClearSearch={() => setItemSearchTerm("")}
             />
-            {itemSearchTerm.trim() && filteredItems.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Search className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                <p>{getText("noItemsMatch", language)}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </DashboardLayout>

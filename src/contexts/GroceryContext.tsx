@@ -66,13 +66,15 @@ interface GroceryProviderProps {
 }
 
 export const GroceryProvider = ({ children }: GroceryProviderProps) => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [lists, setLists] = useState<GroceryList[]>([]);
   const [currentList, setCurrentList] = useState<GroceryList | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load lists from database when user changes
   useEffect(() => {
+    if (authLoading) return;
+
     const fetchLists = async () => {
       if (!user) {
         setLists([]);
@@ -89,6 +91,11 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
           .order('created_at', { ascending: false });
 
         if (listsError) throw listsError;
+
+        if (!listsData || listsData.length === 0) {
+          setLists([]);
+          return;
+        }
 
         // Fetch all items for all lists
         const { data: itemsData, error: itemsError } = await supabase
@@ -107,7 +114,7 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
               name: item.name,
               quantity: Number(item.quantity),
               unit: item.unit,
-              estimatedPrice: item.estimated_price ? Number(item.estimated_price) : null
+              estimatedPrice: item.estimated_price !== null && item.estimated_price !== undefined ? Number(item.estimated_price) : null
             }))
             : [];
 
@@ -136,7 +143,7 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
     };
 
     fetchLists();
-  }, [user]);
+  }, [user, authLoading]);
 
   const createList = async (list: Omit<GroceryList, "id" | "createdAt" | "totalEstimatedPrice">) => {
     if (!user) {
@@ -638,6 +645,11 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
       if (listsError) throw listsError;
 
+      if (!listsData || listsData.length === 0) {
+        setLists([]);
+        return;
+      }
+
       // Fetch all items for all lists
       const { data: itemsData, error: itemsError } = await supabase
         .from('grocery_items')
@@ -655,7 +667,7 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
             name: item.name,
             quantity: Number(item.quantity),
             unit: item.unit,
-            estimatedPrice: item.estimated_price ? Number(item.estimated_price) : null
+            estimatedPrice: item.estimated_price !== null && item.estimated_price !== undefined ? Number(item.estimated_price) : null
           }))
           : [];
 
@@ -782,14 +794,15 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
 
         autoTable(doc, {
           startY: currentY + 10,
-          head: [['Item', 'Quantity', 'Unit', 'Price (BDT)']],
-          body: list.items.map(item => [
+          head: [['SL', 'Item', 'Quantity', 'Unit', 'Price (BDT)']],
+          body: list.items.map((item, idx) => [
+            (idx + 1).toString(),
             item.name,
             item.quantity.toString(),
             item.unit,
-            (item.estimatedPrice || 0).toFixed(2)
+            item.estimatedPrice && Number(item.estimatedPrice) > 0 ? Number(item.estimatedPrice).toFixed(2) : ""
           ]),
-          foot: [['', '', 'Total:', `BDT ${list.totalEstimatedPrice.toFixed(2)}`]],
+          foot: [['', '', '', 'Total:', list.totalEstimatedPrice && Number(list.totalEstimatedPrice) > 0 ? `BDT ${list.totalEstimatedPrice.toFixed(2)}` : ""]],
           theme: 'striped',
           headStyles: {
             fillColor: [255, 140, 0],
@@ -812,10 +825,11 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
             cellPadding: 3
           },
           columnStyles: {
-            0: { halign: 'left' },
-            1: { halign: 'center' },
+            0: { halign: 'center', cellWidth: 15 },
+            1: { halign: 'left' },
             2: { halign: 'center' },
-            3: { halign: 'right' }
+            3: { halign: 'center' },
+            4: { halign: 'right' }
           }
         });
 
@@ -916,15 +930,16 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
         // Create simplified table structure
         autoTable(doc, {
           startY: 50,
-          head: [['Item', 'Quantity', 'Unit', 'Est. Price (৳)']],
-          body: list.items.map(item => [
+          head: [['SL', 'Item', 'Quantity', 'Unit', 'Est. Price (৳)']],
+          body: list.items.map((item, idx) => [
+            (idx + 1).toString(),
             item.name,
             item.quantity.toString(),
             item.unit,
-            (item.estimatedPrice || 0).toFixed(2)
+            item.estimatedPrice && Number(item.estimatedPrice) > 0 ? Number(item.estimatedPrice).toFixed(2) : ""
           ]),
           foot: [
-            ['', '', 'Total:', `৳${list.totalEstimatedPrice.toFixed(2)}`]
+            ['', '', '', 'Total:', list.totalEstimatedPrice && Number(list.totalEstimatedPrice) > 0 ? `৳${list.totalEstimatedPrice.toFixed(2)}` : ""]
           ],
           headStyles: {
             fillColor: [255, 140, 0],
@@ -941,6 +956,13 @@ export const GroceryProvider = ({ children }: GroceryProviderProps) => {
             font: 'courier', // Using courier for better compatibility
             fontSize: 10,
             cellPadding: 3,
+          },
+          columnStyles: {
+            0: { halign: 'center', cellWidth: 15 },
+            1: { halign: 'left' },
+            2: { halign: 'center' },
+            3: { halign: 'center' },
+            4: { halign: 'right' }
           },
           didDrawPage: function (data) {
             // Add footer
